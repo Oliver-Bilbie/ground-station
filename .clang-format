@@ -1,0 +1,6 @@
+BasedOnStyle: Chromium
+BinPackParameters: false
+BinPackArguments: false
+AlignAfterOpenBracket: Align
+ContinuationIndentWidth: 4
+ColumnLimit: 88
