@@ -13,17 +13,17 @@ target_sources(Satellite
    src/satellite.cpp
 )
 
-add_library(Packet src/packet.cpp src/packet.h)
+add_library(Packets src/packets.cpp src/packets.h)
 add_library(GPS src/gps.cpp src/gps.h)
 add_library(Noise src/simulate_noise.cpp src/simulate_noise.h)
 
 target_link_libraries(GroundStation
    PRIVATE
-   Packet
+   Packets
 )
 target_link_libraries(Satellite
    PRIVATE
-   Packet
+   Packets
    GPS
    Noise
 )

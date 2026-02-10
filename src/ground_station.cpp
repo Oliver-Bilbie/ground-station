@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include "packet.h"
+#include "packets.h"
 
 constexpr int PORT = 8080;
 constexpr int BUFFER_SIZE = 1024;
@@ -48,7 +48,7 @@ int main() {
             << std::endl;
 
   int recv_len;
-  Packet packet;
+  PositionPacket packet;
   struct pollfd pfd;
   pfd.fd = server_fd;
   pfd.events = POLLIN;
@@ -84,7 +84,7 @@ int main() {
         continue;
       }
 
-      PacketData packet_data = PacketData::deserialize(packet);
+      PositionPacketData packet_data = PositionPacketData::deserialize(packet);
       std::cout << packet_data.format() << std::endl;
     }
   }

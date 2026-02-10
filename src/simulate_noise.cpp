@@ -26,7 +26,9 @@ void add_latency() {
   std::this_thread::sleep_for(std::chrono::milliseconds(latency_ms));
 }
 
-void _send_through_space(Packet packet, int client_fd, sockaddr_in server_addr) {
+void _send_through_space(PositionPacket packet,
+                         int client_fd,
+                         sockaddr_in server_addr) {
   if (is_packet_loss()) {
     return;
   }
@@ -41,7 +43,7 @@ void _send_through_space(Packet packet, int client_fd, sockaddr_in server_addr) 
          sizeof(server_addr));
 }
 
-void send_through_space(Packet packet, int client_fd, sockaddr_in server_addr) {
+void send_through_space(PositionPacket packet, int client_fd, sockaddr_in server_addr) {
   // This part of the process shouldn't impact the main satellite functionality, so
   // we are going to run it in a separate thread in a 'fire and forget' fashion.
   //

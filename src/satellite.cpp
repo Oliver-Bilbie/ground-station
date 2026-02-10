@@ -10,7 +10,7 @@
 #include <iostream>
 #include <thread>
 #include "gps.h"
-#include "packet.h"
+#include "packets.h"
 #include "simulate_noise.h"
 
 #define SERVER_IP "127.0.0.1"
@@ -52,8 +52,9 @@ int main() {
 
   while (running) {
     Position pos = satellite_gps.get_position();
-    Packet packet =
-        PacketData(packet_num, pos.timestamp, pos.x, pos.y, pos.z).serialize();
+    PositionPacket packet =
+        PositionPacketData(packet_num, pos.timestamp, pos.x, pos.y, pos.z).serialize();
+
     send_through_space(packet, client_fd, server_addr);
     packet_num++;
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
