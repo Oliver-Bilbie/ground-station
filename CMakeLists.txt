@@ -20,6 +20,7 @@ add_library(Noise src/simulate_noise.cpp src/simulate_noise.h)
 target_link_libraries(GroundStation
    PRIVATE
    Packets
+   Noise
 )
 target_link_libraries(Satellite
    PRIVATE

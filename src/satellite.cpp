@@ -54,7 +54,7 @@ int main() {
             << " (Press Ctrl+C to stop)" << std::endl;
 
   GPS satellite_gps;
-  uint64_t packet_num = 0;
+  uint64_t packet_num = 1;
   Buffer<PositionPacket> buffer(100);
 
   signal(SIGINT, signal_handler);

@@ -9,7 +9,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <unordered_set>
 #include "packets.h"
+#include "simulate_noise.h"
 
 constexpr int PORT = 8080;
 constexpr int BUFFER_SIZE = 1024;
@@ -44,14 +46,17 @@ int main() {
     exit(1);
   }
 
-  std::cout << "UDP Server listening on port " << PORT << " (Press Ctrl+C to stop)"
-            << std::endl;
+  std::cout << "[INFO] UDP Server listening on port " << PORT
+            << " (Press Ctrl+C to stop)" << std::endl;
 
   int recv_len;
   PositionPacket packet;
   struct pollfd pfd;
   pfd.fd = server_fd;
   pfd.events = POLLIN;
+
+  uint64_t latest_packet = 0;
+  std::unordered_set<uint64_t> missing_packets;
 
   signal(SIGINT, signal_handler);
 
@@ -84,12 +89,28 @@ int main() {
         continue;
       }
 
-      PositionPacketData packet_data = PositionPacketData::deserialize(packet);
-      std::cout << packet_data.format() << std::endl;
+      PositionPacketData position_data = PositionPacketData::deserialize(packet);
+      std::cout << position_data.format() << std::endl;
+
+      // Check for any previous packets that have not arrived
+      for (int n = latest_packet + 1; n < position_data.packet_number; n++) {
+        missing_packets.insert(n);
+      }
+      latest_packet = std::max(latest_packet, position_data.packet_number);
+
+      // Check whether this packet was previously marked as missing
+      missing_packets.erase(position_data.packet_number);
+
+      // Request all missing packets
+      for (const uint64_t& packet_num : missing_packets) {
+        std::cout << "[INFO] Requesting missing packet: " << packet_num << std::endl;
+        send_through_space(
+            NackPacketData(packet_num).serialize(), server_fd, client_addr);
+      }
     }
   }
 
-  std::cout << std::endl << "Cleaning up and exiting..." << std::endl;
+  std::cout << std::endl << "[INFO] Cleaning up and exiting..." << std::endl;
   close(server_fd);
   return 0;
 }
