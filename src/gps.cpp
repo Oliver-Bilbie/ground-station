@@ -16,7 +16,7 @@ GPS::GPS() {
   state.vy = v * std::cos(theta) * std::cos(inc);
   state.vz = v * std::cos(theta) * std::sin(inc);
 
-  last_update_time_ms = get_current_time_ms();
+  state.last_update_time_ms = get_current_time_ms();
 }
 
 uint64_t GPS::get_current_time_ms() {
@@ -53,7 +53,7 @@ Derivative GPS::evaluate(const State& initial,
 
 void GPS::update_position() {
   uint64_t now_ms = get_current_time_ms();
-  double dt = (now_ms - last_update_time_ms) / 1000.0;  // Convert to seconds
+  double dt = (now_ms - state.last_update_time_ms) / 1000.0;  // Convert to seconds
 
   if (dt <= 0)
     return;  // No time passed
@@ -80,10 +80,10 @@ void GPS::update_position() {
   state.vy += dvydt * dt;
   state.vz += dvzdt * dt;
 
-  last_update_time_ms = now_ms;
+  state.last_update_time_ms = now_ms;
 }
 
 Position GPS::get_position() {
   update_position();
-  return Position{state.x, state.y, state.z, last_update_time_ms};
+  return Position{state.x, state.y, state.z, state.last_update_time_ms};
 }
