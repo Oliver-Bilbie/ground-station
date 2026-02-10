@@ -11,6 +11,7 @@
 #include <thread>
 #include "gps.h"
 #include "packet.h"
+#include "simulate_noise.h"
 
 #define SERVER_IP "127.0.0.1"
 #define PORT 8080
@@ -53,12 +54,7 @@ int main() {
     Position pos = satellite_gps.get_position();
     Packet packet =
         PacketData(packet_num, pos.timestamp, pos.x, pos.y, pos.z).serialize();
-    sendto(client_fd,
-           &packet,
-           sizeof(packet),
-           0,
-           (struct sockaddr*)&server_addr,
-           sizeof(server_addr));
+    send_through_space(packet, client_fd, server_addr);
     packet_num++;
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
