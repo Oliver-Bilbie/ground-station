@@ -10,11 +10,9 @@
 #include <cstring>
 #include <iostream>
 #include "dispatcher.h"
+#include "globals.h"
 #include "logger.h"
 #include "packets.h"
-
-constexpr int PORT = 8080;
-constexpr int BUFFER_SIZE = 1024;
 
 std::atomic<bool> running(true);
 void signal_handler(int signal) {
@@ -57,7 +55,7 @@ int main() {
 
   Logger logger;
   uint64_t latest_packet = 0;
-  Dispatcher dispatcher(32, gs_fd);
+  Dispatcher dispatcher(TIMEOUT_MS / CYCLE_LENGTH_MS, gs_fd);
 
   signal(SIGINT, signal_handler);
 

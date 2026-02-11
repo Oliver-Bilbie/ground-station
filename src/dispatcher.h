@@ -12,7 +12,7 @@
 
 class Dispatcher {
  public:
-  Dispatcher(uint16_t mr, int fd);
+  Dispatcher(int to, int fd);
   ~Dispatcher();
   void set_target_address(sockaddr_in addr);
   void request_packet(uint64_t packet_number);
@@ -23,7 +23,7 @@ class Dispatcher {
  private:
   std::unordered_map<uint64_t, uint16_t> retry_counts;
   std::unordered_set<uint64_t> failed;
-  uint16_t max_retries;
+  int timeout_ms;
 
   std::atomic<bool> is_running;
   std::mutex mtx;

@@ -3,11 +3,12 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include "globals.h"
 #include "packets.h"
 #include "simulate_noise.h"
 
-Dispatcher::Dispatcher(uint16_t mr, int fd)
-    : max_retries(mr), file_descriptor(fd), is_running(true), is_ready(false) {
+Dispatcher::Dispatcher(int to, int fd)
+    : timeout_ms(to), file_descriptor(fd), is_running(true), is_ready(false) {
   worker = std::thread([this]() {
     while (is_running) {
       {
@@ -23,7 +24,7 @@ Dispatcher::Dispatcher(uint16_t mr, int fd)
           send_through_space(
               NackPacketData(packet_num).serialize(), file_descriptor, target_address);
 
-          if (retry_count >= max_retries) {
+          if (retry_count >= timeout_ms / CYCLE_LENGTH_MS) {
             timed_out.push_back(packet_num);
           } else {
             retry_counts.at(packet_num)++;
@@ -35,7 +36,7 @@ Dispatcher::Dispatcher(uint16_t mr, int fd)
           retry_counts.erase(packet_num);
         }
       }
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      std::this_thread::sleep_for(std::chrono::milliseconds(CYCLE_LENGTH_MS));
     }
   });
 }

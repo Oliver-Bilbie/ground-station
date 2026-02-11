@@ -11,14 +11,12 @@
 #include <iostream>
 #include <optional>
 #include "buffer.h"
+#include "globals.h"
 #include "gps.h"
 #include "packets.h"
 #include "simulate_noise.h"
 
 #define SERVER_IP "127.0.0.1"
-#define PORT 8080
-#define BUF_SIZE 512
-#define CYCLE_LENGTH_MS 100
 
 std::atomic<bool> running(true);
 void signal_handler(int signal) {

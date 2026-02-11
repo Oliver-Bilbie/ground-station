@@ -1,6 +1,7 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include <cstdint>
 #include <queue>
 #include "packets.h"
 
@@ -21,6 +22,8 @@ class Logger {
                       std::vector<PositionPacketData>,
                       MinHeapByPacketNum>
       buffer;
+
+  void process_buffer();
 };
 
 #endif

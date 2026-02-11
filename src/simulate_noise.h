@@ -18,7 +18,7 @@ void send_through_space(T packet, int client_fd, sockaddr_in server_addr) {
   // Spawning a new thread for each packet is far too expensive for a high throughput
   // system but good enough for now. I may introduce a thread pool later on.
   std::thread t(
-      [](T packet, int client_fd, sockaddr_in server_addr) -> void {
+      [](T packet, int client_fd, sockaddr_in server_addr) {
         if (is_packet_loss()) {
           return;
         }
