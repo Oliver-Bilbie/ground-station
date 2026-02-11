@@ -22,7 +22,7 @@ target_link_libraries(Dispatcher PRIVATE Noise)
 target_link_libraries(GroundStation
    PRIVATE
    Packets
-   Noise
+   Dispatcher
 )
 target_link_libraries(Satellite
    PRIVATE

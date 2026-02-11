@@ -9,9 +9,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <unordered_set>
+#include "dispatcher.h"
 #include "packets.h"
-#include "simulate_noise.h"
 
 constexpr int PORT = 8080;
 constexpr int BUFFER_SIZE = 1024;
@@ -25,24 +24,24 @@ void signal_handler(int signal) {
 
 int main() {
   // Create socket file descriptor
-  int server_fd = socket(AF_INET, SOCK_DGRAM, 0);
-  if (server_fd == -1) {
+  int gs_fd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (gs_fd == -1) {
     perror("socket failed");
     exit(EXIT_FAILURE);
   }
 
   // Configure server address
-  struct sockaddr_in server_addr, client_addr;
-  socklen_t client_len = sizeof(client_addr);
-  memset(&server_addr, 0, sizeof(server_addr));
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_addr.s_addr = INADDR_ANY;
-  server_addr.sin_port = htons(PORT);
+  struct sockaddr_in gs_addr, satellite_addr;
+  socklen_t satellite_len = sizeof(satellite_addr);
+  memset(&gs_addr, 0, sizeof(gs_addr));
+  gs_addr.sin_family = AF_INET;
+  gs_addr.sin_addr.s_addr = INADDR_ANY;
+  gs_addr.sin_port = htons(PORT);
 
   // Bind socket to address
-  if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) == -1) {
+  if (bind(gs_fd, (struct sockaddr*)&gs_addr, sizeof(gs_addr)) == -1) {
     perror("bind");
-    close(server_fd);
+    close(gs_fd);
     exit(1);
   }
 
@@ -52,11 +51,11 @@ int main() {
   int recv_len;
   PositionPacket packet;
   struct pollfd pfd;
-  pfd.fd = server_fd;
+  pfd.fd = gs_fd;
   pfd.events = POLLIN;
 
   uint64_t latest_packet = 0;
-  std::unordered_set<uint64_t> missing_packets;
+  Dispatcher dispatcher(32, gs_fd);
 
   signal(SIGINT, signal_handler);
 
@@ -77,16 +76,18 @@ int main() {
     }
 
     if (pfd.revents & POLLIN) {
-      socklen_t client_len = sizeof(client_addr);
-      recv_len = recvfrom(server_fd,
+      socklen_t satellite_len = sizeof(satellite_addr);
+      recv_len = recvfrom(gs_fd,
                           &packet,
                           sizeof(packet),
                           0,
-                          (struct sockaddr*)&client_addr,
-                          &client_len);
-
+                          (struct sockaddr*)&satellite_addr,
+                          &satellite_len);
       if (recv_len == -1) {
         continue;
+      }
+      if (!dispatcher.is_ready) {
+        dispatcher.set_target_address(satellite_addr);
       }
 
       PositionPacketData position_data = PositionPacketData::deserialize(packet);
@@ -94,23 +95,19 @@ int main() {
 
       // Check for any previous packets that have not arrived
       for (int n = latest_packet + 1; n < position_data.packet_number; n++) {
-        missing_packets.insert(n);
+        dispatcher.request_packet(n);
       }
       latest_packet = std::max(latest_packet, position_data.packet_number);
 
       // Check whether this packet was previously marked as missing
-      missing_packets.erase(position_data.packet_number);
-
-      // Request all missing packets
-      for (const uint64_t& packet_num : missing_packets) {
-        std::cout << "[INFO] Requesting missing packet: " << packet_num << std::endl;
-        send_through_space(
-            NackPacketData(packet_num).serialize(), server_fd, client_addr);
-      }
+      dispatcher.mark_received(position_data.packet_number);
     }
   }
 
-  std::cout << std::endl << "[INFO] Cleaning up and exiting..." << std::endl;
-  close(server_fd);
+  std::cout << std::endl
+            << std::endl
+            << "[INFO] " << dispatcher.get_failed().size() << " packets were lost"
+            << std::endl;
+  close(gs_fd);
   return 0;
 }
