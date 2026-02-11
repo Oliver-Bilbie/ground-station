@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <atomic>
 #include <csignal>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -13,12 +14,23 @@
 #include "globals.h"
 #include "logger.h"
 #include "packets.h"
+#include "rolling_avg.h"
 
 std::atomic<bool> running(true);
 void signal_handler(int signal) {
   if (signal == SIGINT) {
     running = false;
   }
+}
+
+uint64_t ms_since_timestamp(uint64_t timestamp) {
+  uint64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                     std::chrono::system_clock::now().time_since_epoch())
+                     .count();
+  if (timestamp > now) {
+    return 0;
+  }
+  return now - timestamp;
 }
 
 int main() {
@@ -54,6 +66,7 @@ int main() {
   pfd.events = POLLIN;
 
   Logger logger;
+  RollingAverage<uint64_t> latency(100);
   uint64_t latest_packet = 0;
   Dispatcher dispatcher(TIMEOUT_MS / CYCLE_LENGTH_MS, gs_fd);
 
@@ -92,6 +105,11 @@ int main() {
 
       PositionPacketData position_data = PositionPacketData::deserialize(packet);
       logger.log(position_data);
+      latency.add_contribution(ms_since_timestamp(position_data.timestamp));
+      if (position_data.packet_number % 100 == 0) {
+        std::cout << "[INFO] Average latency: " << latency.get_value() << "ms"
+                  << std::endl;
+      }
 
       // Check for any previous packets that have not arrived
       for (int n = latest_packet + 1; n < position_data.packet_number; n++) {
@@ -107,7 +125,8 @@ int main() {
   std::cout << std::endl
             << std::endl
             << "[INFO] " << dispatcher.get_failed().size() << " packets were lost"
-            << std::endl;
+            << std::endl
+            << "[INFO] Average latency: " << latency.get_value() << "ms" << std::endl;
   close(gs_fd);
   return 0;
 }
