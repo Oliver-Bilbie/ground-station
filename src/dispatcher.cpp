@@ -6,7 +6,6 @@
 #include <vector>
 #include "globals.h"
 #include "packets.h"
-#include "simulate_noise.h"
 
 Dispatcher::Dispatcher(int fd)
     : file_descriptor(fd), is_running(true), is_ready(false) {
@@ -22,7 +21,7 @@ Dispatcher::Dispatcher(int fd)
 
         for (const auto& [packet_num, retry_count] : retry_counts) {
           std::cout << "[INFO] Requesting missing packet: " << packet_num << std::endl;
-          send_through_space(
+          space.send_message(
               NackPacketData(packet_num).serialize(), file_descriptor, target_address);
 
           if (retry_count >= TIMEOUT_MS / CYCLE_LENGTH_MS) {
@@ -59,8 +58,8 @@ void Dispatcher::request_packet(uint64_t packet_number) {
 void Dispatcher::receive(uint64_t packet_number) {
   std::lock_guard<std::mutex> lock(mtx);
   retry_counts.erase(packet_number);
-  for (int n = latest_packet_num + 1; n < packet_number; n++) {
-    retry_counts.insert({packet_number, 0});
+  for (uint64_t n = latest_packet_num + 1; n < packet_number; n++) {
+    retry_counts.insert({n, 0});
   }
   latest_packet_num = std::max(latest_packet_num, packet_number);
   cv.notify_all();

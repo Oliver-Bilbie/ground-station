@@ -9,6 +9,7 @@
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
+#include "space.h"
 
 class Dispatcher {
  public:
@@ -34,6 +35,7 @@ class Dispatcher {
   std::condition_variable cv;
   std::thread worker;
 
+  Space space;
   int file_descriptor;
   sockaddr_in target_address;
 };

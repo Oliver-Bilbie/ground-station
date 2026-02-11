@@ -15,11 +15,11 @@ target_sources(Satellite
 
 add_library(Packets src/packets.cpp src/packets.h)
 add_library(GPS src/gps.cpp src/gps.h)
-add_library(Noise src/simulate_noise.cpp src/simulate_noise.h)
+add_library(Space src/space.cpp src/space.h)
 add_library(Logger src/logger.cpp src/logger.h)
 target_link_libraries(Logger PRIVATE Packets)
 add_library(Dispatcher src/dispatcher.cpp src/dispatcher.h)
-target_link_libraries(Dispatcher PRIVATE Noise)
+target_link_libraries(Dispatcher PRIVATE Space)
 
 target_link_libraries(GroundStation
    PRIVATE
@@ -30,6 +30,6 @@ target_link_libraries(GroundStation
 target_link_libraries(Satellite
    PRIVATE
    Packets
+   Space
    GPS
-   Noise
 )
