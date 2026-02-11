@@ -24,6 +24,7 @@ target_link_libraries(Dispatcher PRIVATE Noise)
 target_link_libraries(GroundStation
    PRIVATE
    Packets
+   Logger
    Dispatcher
 )
 target_link_libraries(Satellite

@@ -10,6 +10,7 @@
 #include <cstring>
 #include <iostream>
 #include "dispatcher.h"
+#include "logger.h"
 #include "packets.h"
 
 constexpr int PORT = 8080;
@@ -54,6 +55,7 @@ int main() {
   pfd.fd = gs_fd;
   pfd.events = POLLIN;
 
+  Logger logger;
   uint64_t latest_packet = 0;
   Dispatcher dispatcher(32, gs_fd);
 
@@ -91,7 +93,7 @@ int main() {
       }
 
       PositionPacketData position_data = PositionPacketData::deserialize(packet);
-      std::cout << position_data.format() << std::endl;
+      logger.log(position_data);
 
       // Check for any previous packets that have not arrived
       for (int n = latest_packet + 1; n < position_data.packet_number; n++) {
