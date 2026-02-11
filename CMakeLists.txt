@@ -16,6 +16,8 @@ target_sources(Satellite
 add_library(Packets src/packets.cpp src/packets.h)
 add_library(GPS src/gps.cpp src/gps.h)
 add_library(Noise src/simulate_noise.cpp src/simulate_noise.h)
+add_library(Dispatcher src/dispatcher.cpp src/dispatcher.h)
+target_link_libraries(Dispatcher PRIVATE Noise)
 
 target_link_libraries(GroundStation
    PRIVATE
