@@ -12,18 +12,22 @@
 
 class Dispatcher {
  public:
-  Dispatcher(int to, int fd);
+  Dispatcher(int fd);
   ~Dispatcher();
   void set_target_address(sockaddr_in addr);
   void request_packet(uint64_t packet_number);
-  void mark_received(uint64_t packet_number);
+  /**
+   * Mark the packet_number as received and request any previous packets that
+   * have not yet arrived.
+   */
+  void receive(uint64_t packet_number);
   std::unordered_set<uint64_t> get_failed();
   bool is_ready;
 
  private:
   std::unordered_map<uint64_t, uint16_t> retry_counts;
   std::unordered_set<uint64_t> failed;
-  int timeout_ms;
+  uint64_t latest_packet_num = 0;
 
   std::atomic<bool> is_running;
   std::mutex mtx;

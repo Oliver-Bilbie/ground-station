@@ -67,8 +67,7 @@ int main() {
 
   Logger logger;
   RollingAverage<uint64_t> latency(100);
-  uint64_t latest_packet = 0;
-  Dispatcher dispatcher(TIMEOUT_MS / CYCLE_LENGTH_MS, gs_fd);
+  Dispatcher dispatcher(gs_fd);
 
   signal(SIGINT, signal_handler);
 
@@ -104,21 +103,9 @@ int main() {
       }
 
       PositionPacketData position_data = PositionPacketData::deserialize(packet);
+      dispatcher.receive(position_data.packet_number);
       logger.log(position_data);
       latency.add_contribution(ms_since_timestamp(position_data.timestamp));
-      if (position_data.packet_number % 100 == 0) {
-        std::cout << "[INFO] Average latency: " << latency.get_value() << "ms"
-                  << std::endl;
-      }
-
-      // Check for any previous packets that have not arrived
-      for (int n = latest_packet + 1; n < position_data.packet_number; n++) {
-        dispatcher.request_packet(n);
-      }
-      latest_packet = std::max(latest_packet, position_data.packet_number);
-
-      // Check whether this packet was previously marked as missing
-      dispatcher.mark_received(position_data.packet_number);
     }
   }
 

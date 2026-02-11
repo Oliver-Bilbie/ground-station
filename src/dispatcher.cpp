@@ -1,4 +1,5 @@
 #include "dispatcher.h"
+#include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <thread>
@@ -7,8 +8,8 @@
 #include "packets.h"
 #include "simulate_noise.h"
 
-Dispatcher::Dispatcher(int to, int fd)
-    : timeout_ms(to), file_descriptor(fd), is_running(true), is_ready(false) {
+Dispatcher::Dispatcher(int fd)
+    : file_descriptor(fd), is_running(true), is_ready(false) {
   worker = std::thread([this]() {
     while (is_running) {
       {
@@ -24,7 +25,7 @@ Dispatcher::Dispatcher(int to, int fd)
           send_through_space(
               NackPacketData(packet_num).serialize(), file_descriptor, target_address);
 
-          if (retry_count >= timeout_ms / CYCLE_LENGTH_MS) {
+          if (retry_count >= TIMEOUT_MS / CYCLE_LENGTH_MS) {
             timed_out.push_back(packet_num);
           } else {
             retry_counts.at(packet_num)++;
@@ -55,9 +56,14 @@ void Dispatcher::request_packet(uint64_t packet_number) {
   cv.notify_all();
 }
 
-void Dispatcher::mark_received(uint64_t packet_number) {
+void Dispatcher::receive(uint64_t packet_number) {
   std::lock_guard<std::mutex> lock(mtx);
   retry_counts.erase(packet_number);
+  for (int n = latest_packet_num + 1; n < packet_number; n++) {
+    retry_counts.insert({packet_number, 0});
+  }
+  latest_packet_num = std::max(latest_packet_num, packet_number);
+  cv.notify_all();
 }
 
 std::unordered_set<uint64_t> Dispatcher::get_failed() {
