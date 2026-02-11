@@ -12,3 +12,6 @@ ground_station:
 sat: satellite
 satellite:
 	@./build/Satellite
+
+test: build
+	@./build/UnitTests

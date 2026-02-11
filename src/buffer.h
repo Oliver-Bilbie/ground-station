@@ -29,11 +29,10 @@ class Buffer {
    * n = 0 will return the most recent item.
    */
   std::optional<T> get(int n) {
-    if (n >= items.size()) {
+    if (n >= items.size() || n < 0) {
       return std::nullopt;
     }
-
-    return items.at(items.size() - 1 - n);
+    return items[items.size() - 1 - n];
   };
 };
 

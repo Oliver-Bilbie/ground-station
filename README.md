@@ -24,3 +24,7 @@ Similarly you can spin up a satellite by running
 ```
 make sat
 ```
+
+## Tests
+
+To run the unit tests, run `make test` from the project root.

@@ -1,35 +1,35 @@
 cmake_minimum_required(VERSION 4.2)
 project(GroundStation)
+set(CMAKE_CXX_STANDARD 17)
 
-add_executable(GroundStation)
-target_sources(GroundStation
-   PRIVATE
-   src/ground_station.cpp
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/heads/main.zip
 )
+FetchContent_MakeAvailable(googletest)
 
-add_executable(Satellite)
-target_sources(Satellite
-   PRIVATE
-   src/satellite.cpp
-)
+enable_testing()
 
-add_library(Packets src/packets.cpp src/packets.h)
-add_library(GPS src/gps.cpp src/gps.h)
-add_library(Space src/space.cpp src/space.h)
-add_library(Logger src/logger.cpp src/logger.h)
-target_link_libraries(Logger PRIVATE Packets)
-add_library(Dispatcher src/dispatcher.cpp src/dispatcher.h)
-target_link_libraries(Dispatcher PRIVATE Space)
+add_library(gs_core
+    src/packets.cpp src/packets.h
+    src/gps.cpp src/gps.h
+    src/space.cpp src/space.h
+    src/logger.cpp src/logger.h
+    src/dispatcher.cpp src/dispatcher.h
+    src/buffer.h
+    src/rolling_avg.h
+    src/globals.h
+)
+target_include_directories(gs_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(GroundStation
-   PRIVATE
-   Packets
-   Logger
-   Dispatcher
-)
-target_link_libraries(Satellite
-   PRIVATE
-   Packets
-   Space
-   GPS
-)
+add_executable(GroundStation src/ground_station.cpp)
+target_link_libraries(GroundStation PRIVATE gs_core)
+
+add_executable(Satellite src/satellite.cpp)
+target_link_libraries(Satellite PRIVATE gs_core)
+
+add_executable(UnitTests tests/test_buffer.cpp)
+target_link_libraries(UnitTests PRIVATE gs_core GTest::gtest_main)
+include(GoogleTest)
+gtest_discover_tests(UnitTests)
