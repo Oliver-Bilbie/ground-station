@@ -1,7 +1,7 @@
 # 📡 Ground Station
 
 This is a project that I built to explore some lower-level networking.
-It simulates a connection between a satellite and a ground station, where the satellite periodically broadcasts its position. The ground station will receive these packets and log them.
+It simulates a connection between a satellite and a ground station, where the satellite periodically broadcasts its position over UDP. Random noise is introduced to simulate the packet travelling through space; some packets are delayed, while others are never sent at all. The ground station will receive these packets and log them in the correct order (even if they are received out of order) and re-request missing packets from the satellite.
 
 ## Requirements
 
