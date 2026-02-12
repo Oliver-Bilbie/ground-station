@@ -24,6 +24,8 @@ class Logger {
       buffer;
 
   void process_buffer();
+
+  friend class LoggerTest;
 };
 
 #endif
