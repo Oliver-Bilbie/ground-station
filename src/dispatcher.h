@@ -38,6 +38,8 @@ class Dispatcher {
   Space space;
   int file_descriptor;
   sockaddr_in target_address;
+
+  friend class DispatcherTest;
 };
 
 #endif

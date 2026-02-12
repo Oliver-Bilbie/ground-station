@@ -29,7 +29,7 @@ target_link_libraries(GroundStation PRIVATE gs_core)
 add_executable(Satellite src/satellite.cpp)
 target_link_libraries(Satellite PRIVATE gs_core)
 
-add_executable(UnitTests tests/test_buffer.cpp)
+add_executable(UnitTests tests/test_buffer.cpp tests/test_dispatcher.cpp)
 target_link_libraries(UnitTests PRIVATE gs_core GTest::gtest_main)
 include(GoogleTest)
 gtest_discover_tests(UnitTests)
