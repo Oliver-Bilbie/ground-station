@@ -16,6 +16,7 @@ double unpack_double(uint64_t packed) {
   return unpacked;
 }
 
+#ifndef htonll
 uint64_t htonll(uint64_t value) {
   int num = 42;
   if (*(char*)&num == 42) {  // Check if we are on a Little Endian machine
@@ -25,10 +26,13 @@ uint64_t htonll(uint64_t value) {
   }
   return value;  // We are already Big Endian, do nothing
 }
+#endif
 
+#ifndef htonll
 uint64_t ntohll(uint64_t value) {
   return htonll(value);  // The swap is symmetric
 }
+#endif
 
 PositionPacketData::PositionPacketData(uint64_t pn,
                                        uint64_t ts,
