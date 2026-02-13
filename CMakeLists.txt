@@ -13,11 +13,11 @@ enable_testing()
 
 add_library(gs_core
     src/packets.cpp src/packets.h
-    src/gps.cpp src/gps.h
     src/space.cpp src/space.h
     src/logger.cpp src/logger.h
     src/dispatcher.cpp src/dispatcher.h
     src/buffer.h
+    src/gps.h
     src/rolling_avg.h
     src/globals.h
 )
@@ -32,6 +32,7 @@ target_link_libraries(Satellite PRIVATE gs_core)
 add_executable(UnitTests
    tests/test_buffer.cpp
    tests/test_dispatcher.cpp
+   tests/test_gps.cpp
    tests/test_logger.cpp
 )
 target_link_libraries(UnitTests PRIVATE gs_core GTest::gtest_main)
