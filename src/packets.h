@@ -6,17 +6,19 @@
 
 #pragma pack(push, 1)
 struct PositionPacket {
-  uint64_t packet_number, timestamp, x, y, z;
+  uint64_t satellite_id, packet_number, timestamp, x, y, z;
 };
 #pragma pack(pop)
 
 class PositionPacketData {
  public:
+  uint64_t satellite_id;
   uint64_t packet_number;
   uint64_t timestamp;
   double x, y, z;
 
-  PositionPacketData(uint64_t packet_number,
+  PositionPacketData(uint64_t satellite_id,
+                     uint64_t packet_number,
                      uint64_t timestamp,
                      double x,
                      double y,

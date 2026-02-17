@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <optional>
+#include <utility>
 #include "dispatcher.h"
 #include "server.h"
 
@@ -22,9 +23,9 @@ class DispatcherTest : public testing::Test {
   sockaddr_in address;
   Dispatcher<DummyServer> dispatcher{server};
 
-  bool is_retrying(uint64_t packet_num) {
+  bool is_retrying(uint64_t satellite_id, uint64_t packet_num) {
     std::lock_guard<std::mutex> lock(dispatcher.mtx);
-    return dispatcher.retry_tasks.count(packet_num) > 0;
+    return dispatcher.retry_tasks.count(std::pair{satellite_id, packet_num}) > 0;
   }
 
   size_t retry_task_count() {
@@ -34,49 +35,64 @@ class DispatcherTest : public testing::Test {
 };
 
 TEST_F(DispatcherTest, ReceiveInOrderDoesNotTriggerRetry) {
-  dispatcher.receive(1, address);
+  dispatcher.receive(1, 1, address);
   EXPECT_EQ(retry_task_count(), 0);
 
-  dispatcher.receive(2, address);
+  dispatcher.receive(1, 2, address);
   EXPECT_EQ(retry_task_count(), 0);
 }
 
 TEST_F(DispatcherTest, DetectsSingleGap) {
-  dispatcher.receive(1, address);
-  dispatcher.receive(3, address);
+  dispatcher.receive(1, 1, address);
+  dispatcher.receive(1, 3, address);
 
   ASSERT_EQ(retry_task_count(), 1);
-  EXPECT_FALSE(is_retrying(1));
-  EXPECT_TRUE(is_retrying(2));
-  EXPECT_FALSE(is_retrying(3));
+  EXPECT_FALSE(is_retrying(1, 1));
+  EXPECT_TRUE(is_retrying(1, 2));
+  EXPECT_FALSE(is_retrying(1, 3));
 }
 
 TEST_F(DispatcherTest, DetectsMultipleGaps) {
-  dispatcher.receive(1, address);
-  dispatcher.receive(5, address);
+  dispatcher.receive(1, 1, address);
+  dispatcher.receive(1, 5, address);
 
   ASSERT_EQ(retry_task_count(), 3);
-  EXPECT_FALSE(is_retrying(1));
-  EXPECT_TRUE(is_retrying(2));
-  EXPECT_TRUE(is_retrying(3));
-  EXPECT_TRUE(is_retrying(4));
-  EXPECT_FALSE(is_retrying(5));
+  EXPECT_FALSE(is_retrying(1, 1));
+  EXPECT_TRUE(is_retrying(1, 2));
+  EXPECT_TRUE(is_retrying(1, 3));
+  EXPECT_TRUE(is_retrying(1, 4));
+  EXPECT_FALSE(is_retrying(1, 5));
 }
 
 TEST_F(DispatcherTest, FillsGapSuccessfully) {
-  dispatcher.receive(1, address);
-  dispatcher.receive(3, address);
+  dispatcher.receive(1, 1, address);
+  dispatcher.receive(1, 3, address);
 
-  ASSERT_TRUE(is_retrying(2));
+  ASSERT_TRUE(is_retrying(1, 2));
 
-  dispatcher.receive(2, address);
+  dispatcher.receive(1, 2, address);
 
-  ASSERT_FALSE(is_retrying(2));
+  ASSERT_FALSE(is_retrying(1, 2));
 }
 
 TEST_F(DispatcherTest, IgnoresDuplicates) {
-  dispatcher.receive(1, address);
-  dispatcher.receive(1, address);
+  dispatcher.receive(1, 1, address);
+  dispatcher.receive(1, 1, address);
 
   EXPECT_EQ(retry_task_count(), 0);
+}
+
+TEST_F(DispatcherTest, HandlesMultipleSatellites) {
+  dispatcher.receive(1, 1, address);
+  ASSERT_EQ(retry_task_count(), 0);
+  dispatcher.receive(1, 2, address);
+  ASSERT_EQ(retry_task_count(), 0);
+  dispatcher.receive(2, 1, address);
+  ASSERT_EQ(retry_task_count(), 0);
+  dispatcher.receive(1, 3, address);
+  ASSERT_EQ(retry_task_count(), 0);
+  dispatcher.receive(2, 2, address);
+  ASSERT_EQ(retry_task_count(), 0);
+  dispatcher.receive(2, 3, address);
+  ASSERT_EQ(retry_task_count(), 0);
 }

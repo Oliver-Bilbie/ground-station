@@ -8,14 +8,13 @@
 #include <cstdint>
 #include <iostream>
 #include <optional>
+#include <random>
 #include "buffer.h"
 #include "client.h"
 #include "globals.h"
 #include "gps.h"
 #include "packets.h"
 #include "timer.h"
-
-#define SERVER_IP "127.0.0.1"
 
 std::atomic<bool> running(true);
 void signal_handler(int signal) {
@@ -24,7 +23,15 @@ void signal_handler(int signal) {
   }
 }
 
+uint64_t generate_id() {
+  static std::random_device rd;
+  static std::mt19937_64 gen(rd());
+  static std::uniform_int_distribution<uint64_t> dis;
+  return dis(gen);
+}
+
 int main() {
+  uint64_t satellite_id = generate_id();
   Client client(PORT, SERVER_IP);
   GPS satellite_gps;
   Timer timer;
@@ -40,7 +47,8 @@ int main() {
 
     Position pos = satellite_gps.get_position();
     PositionPacket position_packet =
-        PositionPacketData(packet_num, pos.timestamp, pos.x, pos.y, pos.z).serialize();
+        PositionPacketData(satellite_id, packet_num, pos.timestamp, pos.x, pos.y, pos.z)
+            .serialize();
 
     buffer.push(position_packet);
     client.send(position_packet);

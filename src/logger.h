@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <queue>
+#include <unordered_map>
 #include "packets.h"
 
 struct MinHeapByPacketNum {
@@ -17,13 +18,14 @@ class Logger {
   void log(PositionPacketData packet);
 
  private:
-  uint64_t last_printed;
-  std::priority_queue<PositionPacketData,
-                      std::vector<PositionPacketData>,
-                      MinHeapByPacketNum>
-      buffer;
+  std::unordered_map<uint64_t, uint64_t> last_printed;
+  std::unordered_map<uint64_t,
+                     std::priority_queue<PositionPacketData,
+                                         std::vector<PositionPacketData>,
+                                         MinHeapByPacketNum>>
+      buffers;
 
-  void process_buffer();
+  void process_buffer(uint64_t satellite_id);
 
   friend class LoggerTest;
 };

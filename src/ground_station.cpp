@@ -36,9 +36,10 @@ int main() {
   while (running) {
     auto response = server->listen<PositionPacket>(500);
     if (response.has_value()) {
-      PositionPacketData position_data =
-          PositionPacketData::deserialize(response.value().packet);
-      dispatcher.receive(position_data.packet_number, response.value().client);
+      auto position_data = PositionPacketData::deserialize(response.value().packet);
+      dispatcher.receive(position_data.satellite_id,
+                         position_data.packet_number,
+                         response.value().client);
       logger.log(position_data);
       timer.set(position_data.timestamp);
       latency.add_contribution(timer.elapsed());

@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <cmath>
+#include <random>
 
 struct Position {
   double x;
@@ -54,7 +55,11 @@ class GPS {
     double r = EARTH_RADIUS + ALTITUDE;
     double v = std::sqrt(GM / r);
 
-    double theta = 45.0 * (M_PI / 180.0);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<double> dis(0.0, 360.0);
+
+    double theta = dis(gen) * (M_PI / 180.0);
     double inc = 53.0 * (M_PI / 180.0);
 
     state.x = r * std::cos(theta);

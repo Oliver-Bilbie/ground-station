@@ -35,15 +35,17 @@ uint64_t ntohll(uint64_t value) {
 }
 #endif
 
-PositionPacketData::PositionPacketData(uint64_t pn,
+PositionPacketData::PositionPacketData(uint64_t id,
+                                       uint64_t pn,
                                        uint64_t ts,
                                        double _x,
                                        double _y,
                                        double _z)
-    : packet_number(pn), timestamp(ts), x(_x), y(_y), z(_z) {}
+    : satellite_id(id), packet_number(pn), timestamp(ts), x(_x), y(_y), z(_z) {}
 
 PositionPacket PositionPacketData::serialize() {
-  return PositionPacket{htonll(packet_number),
+  return PositionPacket{htonll(satellite_id),
+                        htonll(packet_number),
                         htonll(timestamp),
                         htonll(pack_double(x)),
                         htonll(pack_double(y)),
@@ -51,7 +53,8 @@ PositionPacket PositionPacketData::serialize() {
 }
 
 PositionPacketData PositionPacketData::deserialize(PositionPacket p) {
-  return PositionPacketData(ntohll(p.packet_number),
+  return PositionPacketData(ntohll(p.satellite_id),
+                            ntohll(p.packet_number),
                             ntohll(p.timestamp),
                             unpack_double(ntohll(p.x)),
                             unpack_double(ntohll(p.y)),
@@ -66,8 +69,9 @@ std::string PositionPacketData::format() {
   std::tm tm = *std::localtime(&t);
 
   std::ostringstream oss;
-  oss << "[" << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << "] Satellite is located at ("
-      << x << ", " << y << ", " << z << ")" << std::endl;
+  oss << "[" << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << "] Satellite "
+      << satellite_id << " is located at (" << x << ", " << y << ", " << z << ")"
+      << std::endl;
   return oss.str();
 }
 
