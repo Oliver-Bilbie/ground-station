@@ -29,7 +29,7 @@ uint64_t htonll(uint64_t value) {
 }
 #endif
 
-#ifndef htonll
+#ifndef ntohll
 uint64_t ntohll(uint64_t value) {
   return htonll(value);  // The swap is symmetric
 }
