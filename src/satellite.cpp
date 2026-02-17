@@ -13,6 +13,7 @@
 #include "globals.h"
 #include "gps.h"
 #include "packets.h"
+#include "timer.h"
 
 #define SERVER_IP "127.0.0.1"
 
@@ -23,16 +24,10 @@ void signal_handler(int signal) {
   }
 }
 
-int time_since_start(
-    std::chrono::time_point<std::chrono::high_resolution_clock> cycle_start) {
-  return std::chrono::duration_cast<std::chrono::microseconds>(
-             std::chrono::high_resolution_clock::now() - cycle_start)
-      .count();
-}
-
 int main() {
   Client client(PORT, SERVER_IP);
   GPS satellite_gps;
+  Timer timer;
 
   uint64_t packet_num = 1;
   Buffer<PositionPacket> buffer(100);
@@ -41,7 +36,7 @@ int main() {
   signal(SIGINT, signal_handler);
 
   while (running) {
-    auto cycle_start = std::chrono::high_resolution_clock::now();
+    timer.reset();
 
     Position pos = satellite_gps.get_position();
     PositionPacket position_packet =
@@ -52,7 +47,7 @@ int main() {
 
     do {
       packet_was_received = false;
-      int listen_time = CYCLE_LENGTH_MS - time_since_start(cycle_start);
+      int listen_time = CYCLE_LENGTH_MS - timer.elapsed();
       if (listen_time > 0) {
         auto result = client.listen<NackPacket>(listen_time);
         if (result.has_value()) {

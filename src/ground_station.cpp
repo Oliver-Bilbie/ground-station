@@ -15,6 +15,7 @@
 #include "packets.h"
 #include "rolling_avg.h"
 #include "server.h"
+#include "timer.h"
 
 std::atomic<bool> running(true);
 void signal_handler(int signal) {
@@ -23,21 +24,12 @@ void signal_handler(int signal) {
   }
 }
 
-uint64_t ms_since_timestamp(uint64_t timestamp) {
-  uint64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                     std::chrono::system_clock::now().time_since_epoch())
-                     .count();
-  if (timestamp > now) {
-    return 0;
-  }
-  return now - timestamp;
-}
-
 int main() {
   std::shared_ptr<Server> server = std::make_shared<Server>(PORT);
   Logger logger;
   RollingAverage<uint64_t> latency(100);
   Dispatcher dispatcher(server);
+  Timer timer;
 
   signal(SIGINT, signal_handler);
 
@@ -48,7 +40,8 @@ int main() {
           PositionPacketData::deserialize(response.value().packet);
       dispatcher.receive(position_data.packet_number, response.value().client);
       logger.log(position_data);
-      latency.add_contribution(ms_since_timestamp(position_data.timestamp));
+      timer.set(position_data.timestamp);
+      latency.add_contribution(timer.elapsed());
     }
   }
 

@@ -23,6 +23,7 @@ add_library(gs_core
     src/gps.h
     src/rolling_avg.h
     src/server.h
+    src/timer.h
 )
 target_include_directories(gs_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
@@ -37,6 +38,7 @@ add_executable(UnitTests
    tests/test_dispatcher.cpp
    tests/test_gps.cpp
    tests/test_logger.cpp
+   tests/test_timer.cpp
 )
 target_link_libraries(UnitTests PRIVATE gs_core GTest::gtest_main)
 include(GoogleTest)
