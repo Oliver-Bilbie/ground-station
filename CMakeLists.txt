@@ -13,14 +13,16 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_library(gs_core
+    src/logger.cpp src/logger.h
     src/packets.cpp src/packets.h
     src/space.cpp src/space.h
-    src/logger.cpp src/logger.h
-    src/dispatcher.cpp src/dispatcher.h
     src/buffer.h
+    src/client.h
+    src/dispatcher.h
+    src/globals.h
     src/gps.h
     src/rolling_avg.h
-    src/globals.h
+    src/server.h
 )
 target_include_directories(gs_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 

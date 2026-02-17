@@ -2,7 +2,6 @@
 #define PACKETS_H
 
 #include <cstdint>
-#include <cstring>
 #include <string>
 
 #pragma pack(push, 1)

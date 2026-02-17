@@ -1,6 +1,7 @@
 #include "packets.h"
 #include <netinet/in.h>
 #include <chrono>
+#include <cstring>
 #include <iomanip>
 #include <sstream>
 
