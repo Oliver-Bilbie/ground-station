@@ -7,6 +7,10 @@ const double leo_height_m = 550000;
 const double leo_rad_m = earth_rad_m + leo_height_m;
 const double leo_rad_m_2 = leo_rad_m * leo_rad_m;
 
+const double tolerance = 0.1;
+const double leo_rad_m_2_min = leo_rad_m_2 - tolerance;
+const double leo_rad_m_2_max = leo_rad_m_2 + tolerance;
+
 struct DummyClock {
   using time_point = std::chrono::system_clock::time_point;
 
@@ -23,7 +27,7 @@ struct DummyClock {
 
 bool is_in_leo(Position p) {
   double r_2 = p.x * p.x + p.y * p.y + p.z * p.z;
-  return r_2 == leo_rad_m_2;
+  return r_2 >= leo_rad_m_2_min && r_2 <= leo_rad_m_2_max;
 }
 
 class GPSTest : public testing::Test {
