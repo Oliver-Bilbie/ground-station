@@ -43,6 +43,7 @@ add_library(gs_core
     src/dispatcher.h
     src/globals.h
     src/gps.h
+    src/latency_tracker.h
     src/rolling_avg.h
     src/server.h
     src/telemetry_server.h
