@@ -61,7 +61,7 @@ PositionPacketData PositionPacketData::deserialize(PositionPacket p) {
                             unpack_double(ntohll(p.z)));
 }
 
-std::string PositionPacketData::format() {
+std::string PositionPacketData::text() {
   auto ms = std::chrono::milliseconds(timestamp);
   auto time_point = std::chrono::system_clock::from_time_t(
       static_cast<std::time_t>(ms.count() / 1000));
@@ -72,6 +72,14 @@ std::string PositionPacketData::format() {
   oss << "[" << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << "] Satellite "
       << satellite_id << " is located at (" << x << ", " << y << ", " << z << ")"
       << std::endl;
+  return oss.str();
+}
+
+std::string PositionPacketData::json() {
+  std::ostringstream oss;
+  oss << "{\"event\": \"position\", \"satellite_id\":" << satellite_id
+      << "\", \"position\": {\"x\": " << x << ", \"y\": " << y << ", \"z\": " << z
+      << "}}" << std::endl;
   return oss.str();
 }
 

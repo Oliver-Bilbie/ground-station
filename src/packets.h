@@ -25,7 +25,8 @@ class PositionPacketData {
                      double z);
   PositionPacket serialize();
   static PositionPacketData deserialize(PositionPacket p);
-  std::string format();
+  std::string text();
+  std::string json();
 };
 
 #pragma pack(push, 1)

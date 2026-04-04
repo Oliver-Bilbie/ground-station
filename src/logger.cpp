@@ -1,18 +1,28 @@
 #include "logger.h"
 #include <iostream>
+#include <memory>
+#include <sstream>
 #include "globals.h"
 
-Logger::Logger() : last_printed(0) {};
+Logger::Logger() : last_output(0) {
+  telemetry = std::make_unique<TelemetryServer>(9001);
+};
 
 void Logger::log(PositionPacketData packet) {
   buffers[packet.satellite_id].push(packet);
   process_buffer(packet.satellite_id);
 
   while (buffers[packet.satellite_id].size() >= TIMEOUT_MS / CYCLE_LENGTH_MS) {
-    std::cout << "[WARN] Packet " << last_printed[packet.satellite_id] + 1
+    std::cout << "[WARN] Packet " << last_output[packet.satellite_id] + 1
               << " from satellite " << packet.satellite_id << " was not received"
               << std::endl;
-    last_printed[packet.satellite_id]++;
+
+    std::ostringstream json_oss;
+    json_oss << "{\"event\": \"missing_packet\", \"satellite_id\":"
+             << packet.satellite_id << "\"}" << std::endl;
+    telemetry->publish(json_oss.str());
+
+    last_output[packet.satellite_id]++;
     process_buffer(packet.satellite_id);
   }
 };
@@ -24,12 +34,13 @@ void Logger::process_buffer(uint64_t satellite_id) {
   }
   PositionPacketData next_packet = buffer.top();
 
-  while (next_packet.packet_number <= last_printed[satellite_id] + 1) {
+  while (next_packet.packet_number <= last_output[satellite_id] + 1) {
     buffer.pop();
 
-    if (next_packet.packet_number == last_printed[satellite_id] + 1) {
-      std::cout << next_packet.format();
-      last_printed[satellite_id]++;
+    if (next_packet.packet_number == last_output[satellite_id] + 1) {
+      std::cout << next_packet.text();
+      telemetry->publish(next_packet.json());
+      last_output[satellite_id]++;
     }
 
     if (buffer.empty()) {
