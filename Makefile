@@ -1,9 +1,9 @@
-.PHONY: build
+.PHONY: build dash dashboard
 default: build
 
 build:
-	@cmake -B build
-	@cd build && make all
+	@cmake -B build -DCMAKE_BUILD_TYPE=Release
+	@cmake --build build
 
 gs: ground_station
 ground_station:
@@ -15,3 +15,7 @@ satellite:
 
 test: build
 	@./build/UnitTests
+
+debug:
+	@cmake -B build -DCMAKE_BUILD_TYPE=Debug
+	@cmake --build build
