@@ -16,7 +16,7 @@ struct MinHeapByPacketNum {
 
 class Logger {
  public:
-  Logger();
+  Logger(std::shared_ptr<TelemetryServer> telemetry_server);
   void log(PositionPacketData packet);
 
  private:
@@ -27,7 +27,7 @@ class Logger {
                                          MinHeapByPacketNum>>
       buffers;
 
-  std::unique_ptr<TelemetryServer> telemetry;
+  std::shared_ptr<TelemetryServer> telemetry;
 
   void process_buffer(uint64_t satellite_id);
 

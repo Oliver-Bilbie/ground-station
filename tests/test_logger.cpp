@@ -4,7 +4,7 @@
 
 class LoggerTest : public testing::Test {
  protected:
-  Logger logger;
+  Logger logger = Logger(nullptr);
   uint64_t last_output(uint64_t satellite_id) {
     return logger.last_output[satellite_id];
   }

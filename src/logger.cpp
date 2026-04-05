@@ -4,8 +4,12 @@
 #include <sstream>
 #include "globals.h"
 
-Logger::Logger() : last_output(0) {
-  telemetry = std::make_unique<TelemetryServer>(9001);
+Logger::Logger(std::shared_ptr<TelemetryServer> telemetry_server)
+    : telemetry(telemetry_server), last_output(0) {
+  if (telemetry_server == nullptr) {
+    std::cout << "[WARN] Logger was initialized without a telemetry server"
+              << std::endl;
+  }
 };
 
 void Logger::log(PositionPacketData packet) {
@@ -17,10 +21,12 @@ void Logger::log(PositionPacketData packet) {
               << " from satellite " << packet.satellite_id << " was not received"
               << std::endl;
 
-    std::ostringstream json_oss;
-    json_oss << "{\"event\": \"missing_packet\", \"satellite_id\":"
-             << packet.satellite_id << "\"}" << std::endl;
-    telemetry->publish(json_oss.str());
+    if (telemetry != nullptr) {
+      std::ostringstream json_oss;
+      json_oss << "{\"event\": \"unavailable_packet\", \"satellite_id\": "
+               << packet.satellite_id << "}" << std::endl;
+      telemetry->publish(json_oss.str());
+    }
 
     last_output[packet.satellite_id]++;
     process_buffer(packet.satellite_id);
@@ -39,7 +45,9 @@ void Logger::process_buffer(uint64_t satellite_id) {
 
     if (next_packet.packet_number == last_output[satellite_id] + 1) {
       std::cout << next_packet.text();
-      telemetry->publish(next_packet.json());
+      if (telemetry != nullptr) {
+        telemetry->publish(next_packet.json());
+      }
       last_output[satellite_id]++;
     }
 

@@ -21,7 +21,7 @@ class DispatcherTest : public testing::Test {
  protected:
   std::shared_ptr<DummyServer> server = std::make_shared<DummyServer>(3000);
   sockaddr_in address;
-  Dispatcher<DummyServer> dispatcher{server};
+  Dispatcher<DummyServer> dispatcher{server, nullptr};
 
   bool is_retrying(uint64_t satellite_id, uint64_t packet_num) {
     std::lock_guard<std::mutex> lock(dispatcher.mtx);

@@ -9,12 +9,14 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <sstream>
 #include <thread>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 #include "globals.h"
 #include "packets.h"
+#include "telemetry_server.h"
 
 struct RetryState {
   uint16_t retry_count;
@@ -33,7 +35,14 @@ struct PairHash {
 template <typename T>
 class Dispatcher {
  public:
-  Dispatcher(std::shared_ptr<T> server_ptr) : server(server_ptr), is_running(true) {
+  Dispatcher(std::shared_ptr<T> server_ptr,
+             std::shared_ptr<TelemetryServer> telemetry_server)
+      : server(server_ptr), telemetry(telemetry_server), is_running(true) {
+    if (telemetry_server == nullptr) {
+      std::cout << "[WARN] Dispatcher was initialized without a telemetry server"
+                << std::endl;
+    }
+
     worker = std::thread([this]() {
       while (is_running) {
         {
@@ -45,6 +54,14 @@ class Dispatcher {
           for (const auto& [retry_key, retry_state] : retry_tasks) {
             std::cout << "[INFO] Requesting missing packet: " << retry_key.second
                       << " from satellite " << retry_key.first << std::endl;
+
+            if (telemetry != nullptr) {
+              std::ostringstream json_oss;
+              json_oss << "{\"event\": \"dropped_packet\", \"satellite_id\": "
+                       << retry_key.first << "}" << std::endl;
+              telemetry->publish(json_oss.str());
+            }
+
             server->send(NackPacketData(retry_key.second).serialize(),
                          retry_state.address);
 
@@ -110,6 +127,7 @@ class Dispatcher {
   std::thread worker;
 
   std::shared_ptr<T> server;
+  std::shared_ptr<TelemetryServer> telemetry;
 
   friend class DispatcherTest;
 };

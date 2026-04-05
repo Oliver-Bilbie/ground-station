@@ -49,7 +49,7 @@ class LatencyTracker {
 
               if (telemetry != nullptr) {
                 std::ostringstream json_oss;
-                json_oss << "{\"event\": \"disconnect\", \"satellite_id\":"
+                json_oss << "{\"event\": \"disconnect\", \"satellite_id\": "
                          << satellite_id << "}" << std::endl;
                 telemetry->publish(json_oss.str());
               }
@@ -87,7 +87,7 @@ class LatencyTracker {
 
     if (telemetry != nullptr) {
       std::ostringstream json_oss;
-      json_oss << "{\"event\": \"latency\", \"satellite_id\":" << satellite_id
+      json_oss << "{\"event\": \"latency\", \"satellite_id\": " << satellite_id
                << ", \"latency\": " << it->second.get_value() << "}";
       telemetry->publish(json_oss.str());
     }
