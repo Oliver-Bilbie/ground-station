@@ -1,0 +1,101 @@
+/* Orbitron for Headers (Tech/Space vibe) */
+/* Inter for Body (Clean/Professional) */
+/* JetBrains Mono for Telemetry Data (Highly Legible) */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;700&display=swap");
+
+:root {
+  --bg-dark: #050508;
+  --bg-panel: rgba(10, 12, 18, 0.8);
+  --accent: #00f2ff;
+  --accent-dim: rgba(0, 242, 255, 0.3);
+  --text-main: #e0e6ed;
+  --text-dim: #94a3b8;
+  --border: rgba(255, 255, 255, 0.1);
+  --glow: 0 0 15px var(--accent-dim);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: "Inter", sans-serif;
+  overflow: hidden;
+}
+
+h1,
+h2,
+h3,
+a,
+.brand {
+  font-family: "Orbitron", sans-serif;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-shadow: var(--glow);
+}
+
+a {
+  text-decoration: none;
+}
+
+.telemetry,
+.coord,
+.timestamp,
+code {
+  font-family: "JetBrains Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.glass-panel {
+  background: var(--bg-panel);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+  padding: 1.5rem;
+  border-radius: 4px;
+}
+
+button {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: "Orbitron", sans-serif;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background: var(--accent);
+  color: var(--bg-dark);
+  box-shadow: var(--glow);
+}
+
+body::after {
+  content: " ";
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background:
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+    linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.02),
+      rgba(0, 255, 0, 0.01),
+      rgba(0, 0, 255, 0.02)
+    );
+  background-size:
+    100% 4px,
+    3px 100%;
+  pointer-events: none;
+  z-index: 100;
+}

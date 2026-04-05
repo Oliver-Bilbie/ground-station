@@ -1,0 +1,59 @@
+.mission-control {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
+.globe-layer {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.overlay-container {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.card,
+.top-bar,
+.bottom-bar {
+  pointer-events: auto;
+  background: rgba(10, 10, 15, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #00f2ff;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 420px;
+}
+
+.left-panel {
+  position: absolute;
+  left: 20px;
+  top: 160px;
+  bottom: 80px;
+}
+.right-panel {
+  position: absolute;
+  right: 20px;
+  top: 160px;
+  bottom: 80px;
+}

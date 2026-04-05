@@ -19,3 +19,7 @@ test: build
 debug:
 	@cmake -B build -DCMAKE_BUILD_TYPE=Debug
 	@cmake --build build
+
+dash: dashboard
+dashboard:
+	@cd dashboard && npm run dev

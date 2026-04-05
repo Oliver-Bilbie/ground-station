@@ -47,8 +47,8 @@ int Space::get_random_int(int min, int max) {
 }
 
 bool Space::is_packet_loss() {
-  // Drop 5% of packets
-  return get_random_int(0, 19) == 0;
+  // Drop 2% of packets
+  return get_random_int(0, 49) == 0;
 }
 
 void Space::add_latency() {

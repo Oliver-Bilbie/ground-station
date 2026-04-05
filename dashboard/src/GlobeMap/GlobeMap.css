@@ -1,0 +1,7 @@
+.globe-container {
+  height: 100%;
+  width: 100%;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
