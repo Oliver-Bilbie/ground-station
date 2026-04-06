@@ -30,7 +30,9 @@ class TelemetryServer {
       this->loop = uWS::Loop::get();
 
       app->ws<PerSocketData>("/*",
-                             {.open =
+                             {.compression = uWS::SHARED_COMPRESSOR,
+                              .idleTimeout = 60,
+                              .open =
                                   [this](auto* ws) {
                                     this->clients.insert(ws);
                                     ws->subscribe("telemetry_stream");
