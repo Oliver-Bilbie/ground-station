@@ -58,6 +58,7 @@ class LatencyTracker {
 
           for (const auto& satellite_id : timed_out) {
             latest_timestamps.erase(satellite_id);
+            telemetry_timestamps.erase(satellite_id);
             latencies.erase(satellite_id);
           }
         }
@@ -86,10 +87,15 @@ class LatencyTracker {
     it->second.add_contribution(elapsed);
 
     if (telemetry != nullptr) {
-      std::ostringstream json_oss;
-      json_oss << "{\"event\": \"latency\", \"satellite_id\": " << satellite_id
-               << ", \"latency\": " << it->second.get_value() << "}";
-      telemetry->publish(json_oss.str());
+      uint64_t last_broadcast = telemetry_timestamps[satellite_id];
+      timer.set(last_broadcast);
+      if (timer.elapsed() > LATENCY_BROADCAST_PERIOD_MS) {
+        telemetry_timestamps[satellite_id] = timestamp;
+        std::ostringstream json_oss;
+        json_oss << "{\"event\": \"latency\", \"satellite_id\": " << satellite_id
+                 << ", \"latency\": " << it->second.get_value() << "}";
+        telemetry->publish(json_oss.str());
+      }
     }
 
     cv.notify_all();
@@ -113,6 +119,7 @@ class LatencyTracker {
 
  private:
   std::unordered_map<uint64_t, uint64_t> latest_timestamps;
+  std::unordered_map<uint64_t, uint64_t> telemetry_timestamps;
   std::unordered_map<uint64_t, RollingAverage<uint64_t>> latencies;
   Timer timer;
 
