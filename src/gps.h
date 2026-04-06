@@ -47,20 +47,21 @@ class GPS {
  private:
   const double GM = 3.986004418e14;       // Earth's Gravitational Parameter (m^3/s^2)
   const double EARTH_RADIUS = 6371000.0;  // Meters
-  const double ALTITUDE = 550000.0;       // 550km
+  const double AVG_ALTITUDE = 550000.0;   // 550km
   State state;
   Clock _clock;
 
   void setup() {
-    double r = EARTH_RADIUS + ALTITUDE;
-    double v = std::sqrt(GM / r);
-
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<double> dis(0.0, 360.0);
+    std::uniform_real_distribution<double> angle_dis(0.0, 360.0);
+    std::uniform_real_distribution<double> length_dis(-50000, 50000);
 
-    double theta = dis(gen) * (M_PI / 180.0);
-    double inc = 53.0 * (M_PI / 180.0);
+    double r = EARTH_RADIUS + AVG_ALTITUDE + length_dis(gen);
+    double v = std::sqrt(GM / r);
+
+    double theta = angle_dis(gen) * (M_PI / 180.0);
+    double inc = angle_dis(gen) * (M_PI / 360.0);
 
     state.x = r * std::cos(theta);
     state.y = r * std::sin(theta) * std::cos(inc);

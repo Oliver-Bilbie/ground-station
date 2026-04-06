@@ -3,13 +3,10 @@
 #include "gps.h"
 
 const double earth_rad_m = 6371000;
-const double leo_height_m = 550000;
-const double leo_rad_m = earth_rad_m + leo_height_m;
-const double leo_rad_m_2 = leo_rad_m * leo_rad_m;
-
-const double tolerance = 0.1;
-const double leo_rad_m_2_min = leo_rad_m_2 - tolerance;
-const double leo_rad_m_2_max = leo_rad_m_2 + tolerance;
+const double leo_rad_m_min = earth_rad_m + 500000;
+const double leo_rad_m_max = earth_rad_m + 600000;
+const double leo_rad_m_2_min = leo_rad_m_min * leo_rad_m_min;
+const double leo_rad_m_2_max = leo_rad_m_max * leo_rad_m_max;
 
 struct DummyClock {
   using time_point = std::chrono::system_clock::time_point;
