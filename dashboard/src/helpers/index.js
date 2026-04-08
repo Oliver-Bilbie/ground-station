@@ -1,2 +1,3 @@
 export * from "./coordinates";
-export * from "./numberToColor";
+export * from "./idToColor";
+export * from "./parsePacket";

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTelemetry } from "../Telemetry";
-import { idToColor } from "../helpers";
+import { idToColor, parsePacket } from "../helpers";
 
 const MAX_EVENTS = 8;
 const EVENT_TIMEOUT_MS = 10000;
@@ -21,8 +21,7 @@ const EventLog = () => {
     if (!lastMessage) return;
 
     try {
-      const data =
-        typeof lastMessage === "string" ? JSON.parse(lastMessage) : lastMessage;
+      const data = parsePacket(lastMessage);
       const { event, satellite_id } = data;
 
       const eventMap = {

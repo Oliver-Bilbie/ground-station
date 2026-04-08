@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import Globe from "globe.gl";
 import { useTelemetry } from "../Telemetry";
-import { cartesianToGlobe, idToColor } from "../helpers";
+import { cartesianToGlobe, idToColor, parsePacket } from "../helpers";
 import EarthNight from "../assets/earth-night.jpg";
 import NightSky from "../assets/night-sky.png";
 import EarthTopology from "../assets/earth-topology.png";
@@ -81,7 +81,7 @@ const GlobeMap = () => {
     if (!lastMessage) return;
 
     try {
-      const data = JSON.parse(lastMessage);
+      const data = parsePacket(lastMessage);
 
       if (data.event === "disconnect") {
         delete satData.current[data.satellite_id];

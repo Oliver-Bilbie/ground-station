@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTelemetry } from "../Telemetry";
-import { cartesianToGeographic, idToColor } from "../helpers";
+import { cartesianToGeographic, idToColor, parsePacket } from "../helpers";
 import "./SatelliteData.css";
 
 const formatPosition = (p) => {
@@ -21,7 +21,7 @@ const SatelliteData = () => {
     if (!lastMessage) return;
 
     try {
-      const data = JSON.parse(lastMessage);
+      const data = parsePacket(lastMessage);
       const { event, satellite_id } = data;
 
       setSatData((prevData) => {
