@@ -23,8 +23,8 @@ void Logger::log(PositionPacketData packet) {
 
     if (telemetry != nullptr) {
       std::ostringstream json_oss;
-      json_oss << "{\"event\": \"unavailable_packet\", \"satellite_id\": "
-               << packet.satellite_id << "}" << std::endl;
+      json_oss << "{\"event\": \"unavailable_packet\", \"satellite_id\": \""
+               << packet.satellite_id << "\"}" << std::endl;
       telemetry->publish(json_oss.str());
     }
 

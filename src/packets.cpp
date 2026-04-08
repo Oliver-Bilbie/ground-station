@@ -77,9 +77,9 @@ std::string PositionPacketData::text() {
 
 std::string PositionPacketData::json() {
   std::ostringstream oss;
-  oss << "{\"event\": \"position\", \"satellite_id\": " << satellite_id
-      << ", \"position\": {\"x\": " << x << ", \"y\": " << y << ", \"z\": " << z << "}}"
-      << std::endl;
+  oss << "{\"event\": \"position\", \"satellite_id\": \"" << satellite_id
+      << "\", \"position\": {\"x\": " << x << ", \"y\": " << y << ", \"z\": " << z
+      << "}}" << std::endl;
   return oss.str();
 }
 

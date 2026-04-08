@@ -57,8 +57,8 @@ class Dispatcher {
 
             if (telemetry != nullptr) {
               std::ostringstream json_oss;
-              json_oss << "{\"event\": \"dropped_packet\", \"satellite_id\": "
-                       << retry_key.first << "}" << std::endl;
+              json_oss << "{\"event\": \"dropped_packet\", \"satellite_id\": \""
+                       << retry_key.first << "\"}" << std::endl;
               telemetry->publish(json_oss.str());
             }
 
