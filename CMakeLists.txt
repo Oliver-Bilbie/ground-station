@@ -46,7 +46,7 @@ add_library(gs_core
     src/latency_tracker.h
     src/rolling_avg.h
     src/server.h
-    src/telemetry_server.h
+    src/telemetry_server.cpp src/telemetry_server.h
     src/timer.h
 )
 target_include_directories(gs_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
