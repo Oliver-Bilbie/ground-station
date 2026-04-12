@@ -5,7 +5,7 @@
 #include "globals.h"
 
 Logger::Logger(std::shared_ptr<TelemetryServer> telemetry_server)
-    : telemetry(telemetry_server), last_output(0) {
+    : telemetry(telemetry_server) {
   if (telemetry_server == nullptr) {
     std::cout << "[WARN] Logger was initialized without a telemetry server"
               << std::endl;
@@ -13,47 +13,51 @@ Logger::Logger(std::shared_ptr<TelemetryServer> telemetry_server)
 };
 
 void Logger::log(PositionPacketData packet) {
-  buffers[packet.satellite_id].push(packet);
+  LoggerState& state = satellite_states[packet.satellite_id];
+  state.buffer.push(packet);
   process_buffer(packet.satellite_id);
 
-  while (buffers[packet.satellite_id].size() >= TIMEOUT_MS / CYCLE_LENGTH_MS) {
-    std::cout << "[WARN] Packet " << last_output[packet.satellite_id] + 1
-              << " from satellite " << packet.satellite_id << " was not received"
-              << std::endl;
+  while (state.buffer.size() >= TIMEOUT_MS / CYCLE_LENGTH_MS) {
+    std::cout << "[WARN] Packet " << state.last_output + 1 << " from satellite "
+              << packet.satellite_id << " was not received" << std::endl;
 
     if (telemetry != nullptr) {
       std::ostringstream json_oss;
       json_oss << "{\"event\": \"unavailable_packet\", \"satellite_id\": \""
-               << packet.satellite_id << "\"}" << std::endl;
+               << packet.satellite_id << "\", \"packet_number\": \""
+               << state.last_output + 1 << "\"}" << std::endl;
       telemetry->publish(json_oss.str());
     }
 
-    last_output[packet.satellite_id]++;
+    state.last_output++;
     process_buffer(packet.satellite_id);
   }
 };
 
+void Logger::on_disconnect(uint64_t satellite_id) {};
+
 void Logger::process_buffer(uint64_t satellite_id) {
-  auto& buffer = buffers[satellite_id];
-  if (buffer.empty()) {
+  LoggerState& state = satellite_states[satellite_id];
+
+  if (state.buffer.empty()) {
     return;
   }
-  PositionPacketData next_packet = buffer.top();
+  PositionPacketData next_packet = state.buffer.top();
 
-  while (next_packet.packet_number <= last_output[satellite_id] + 1) {
-    buffer.pop();
+  while (next_packet.packet_number <= state.last_output + 1) {
+    state.buffer.pop();
 
-    if (next_packet.packet_number == last_output[satellite_id] + 1) {
+    if (next_packet.packet_number == state.last_output + 1) {
       std::cout << next_packet.text();
       if (telemetry != nullptr) {
         telemetry->publish(next_packet.json());
       }
-      last_output[satellite_id]++;
+      state.last_output++;
     }
 
-    if (buffer.empty()) {
+    if (state.buffer.empty()) {
       return;
     }
-    next_packet = buffer.top();
+    next_packet = state.buffer.top();
   }
 }

@@ -6,10 +6,10 @@ class LoggerTest : public testing::Test {
  protected:
   Logger logger = Logger(nullptr);
   uint64_t last_output(uint64_t satellite_id) {
-    return logger.last_output[satellite_id];
+    return logger.satellite_states[satellite_id].last_output;
   }
   size_t buffer_size(uint64_t satellite_id) {
-    return logger.buffers[satellite_id].size();
+    return logger.satellite_states[satellite_id].buffer.size();
   }
   uint64_t timeout_cycles = TIMEOUT_MS / CYCLE_LENGTH_MS;
 };
