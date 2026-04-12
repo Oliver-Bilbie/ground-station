@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <atomic>
 #include <csignal>
-#include <iostream>
 #include <memory>
 #include <optional>
 #include "dispatcher.h"
@@ -28,7 +27,10 @@ int main() {
   auto telemetry = std::make_shared<TelemetryServer>(TELEMETRY_PORT);
   Dispatcher dispatcher(server, telemetry);
   Logger logger(telemetry);
+
   LatencyTracker latencies(telemetry);
+  latencies.on_disconnect([&dispatcher](uint64_t id) { dispatcher.on_disconnect(id); });
+  latencies.on_disconnect([&logger](uint64_t id) { logger.on_disconnect(id); });
 
   signal(SIGINT, signal_handler);
 
@@ -44,9 +46,5 @@ int main() {
     }
   }
 
-  std::cout << std::endl
-            << std::endl
-            << "[INFO] " << dispatcher.get_failed().size() << " packets were lost"
-            << std::endl;
   return 0;
 }
