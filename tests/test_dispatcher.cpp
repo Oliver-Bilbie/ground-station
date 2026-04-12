@@ -25,12 +25,25 @@ class DispatcherTest : public testing::Test {
 
   bool is_retrying(uint64_t satellite_id, uint64_t packet_num) {
     std::lock_guard<std::mutex> lock(dispatcher.mtx);
-    return dispatcher.retry_tasks.count(std::pair{satellite_id, packet_num}) > 0;
+
+    auto sat_it = dispatcher.satellite_states.find(satellite_id);
+    if (sat_it == dispatcher.satellite_states.end()) {
+      return false;
+    }
+
+    auto pack_it = sat_it->second.retry_tasks.find(packet_num);
+    return pack_it != sat_it->second.retry_tasks.end();
   }
 
   size_t retry_task_count() {
     std::lock_guard<std::mutex> lock(dispatcher.mtx);
-    return dispatcher.retry_tasks.size();
+    size_t total = 0;
+
+    for (const auto& [satellite_id, state] : dispatcher.satellite_states) {
+      total += state.retry_tasks.size();
+    }
+
+    return total;
   }
 };
 
