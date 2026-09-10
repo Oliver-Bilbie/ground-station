@@ -1,6 +1,7 @@
 FROM public.ecr.aws/lambda/microvms:al2023-minimal
 
 RUN dnf install -y python3 python3-pip && dnf clean all
+RUN pip3 install --no-cache-dir boto3
 
 WORKDIR /app
 COPY GroundStation /app/GroundStation

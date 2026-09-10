@@ -1,4 +1,4 @@
-region      = "eu-west-1"
+region      = "us-east-1"
 app_name    = "ground-station"
 base_domain = "oliver-bilbie.co.uk"
 full_domain = "ground-station.oliver-bilbie.co.uk"
