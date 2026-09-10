@@ -4,3 +4,5 @@ build-arm64
 /server/GroundStation
 /server/Satellite
 /server/app.zip
+/terraform/.terraform
+/terraform/.terraform.lock.hcl
