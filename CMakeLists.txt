@@ -3,7 +3,6 @@ project(GroundStation)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-
 include(FetchContent)
 FetchContent_Declare(uSockets_content
    GIT_REPOSITORY https://github.com/uNetworking/uSockets.git
@@ -13,14 +12,21 @@ FetchContent_Declare(uWebSockets_content
   GIT_REPOSITORY https://github.com/uNetworking/uWebSockets.git
   GIT_TAG v20.76.0
 )
-FetchContent_Declare(googletest
-  URL https://github.com/google/googletest/archive/refs/heads/main.zip
-)
-FetchContent_MakeAvailable(
-   uSockets_content
-   uWebSockets_content
-   googletest
-)
+if(NOT CMAKE_CROSSCOMPILING)
+  FetchContent_Declare(googletest
+    URL https://github.com/google/googletest/archive/refs/heads/main.zip
+  )
+  FetchContent_MakeAvailable(
+     uSockets_content
+     uWebSockets_content
+     googletest
+  )
+else()
+  FetchContent_MakeAvailable(
+     uSockets_content
+     uWebSockets_content
+  )
+endif()
 
 
 file(GLOB_RECURSE USOCKETS_SOURCES ${usockets_content_SOURCE_DIR}/src/*.c)
@@ -55,20 +61,25 @@ target_link_libraries(gs_core PUBLIC uWebSockets)
 
 add_executable(GroundStation src/ground_station.cpp)
 target_link_libraries(GroundStation PRIVATE gs_core)
-
-
 add_executable(Satellite src/satellite.cpp)
 target_link_libraries(Satellite PRIVATE gs_core)
 
+if(CMAKE_CROSSCOMPILING)
+  set_target_properties(GroundStation Satellite PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/server"
+  )
+endif()
 
-add_executable(UnitTests
-   tests/test_buffer.cpp
-   tests/test_dispatcher.cpp
-   tests/test_gps.cpp
-   tests/test_logger.cpp
-   tests/test_timer.cpp
-)
-target_link_libraries(UnitTests PRIVATE gs_core uWebSockets GTest::gtest_main)
-include(GoogleTest)
-gtest_discover_tests(UnitTests)
-enable_testing()
+if(NOT CMAKE_CROSSCOMPILING)
+  add_executable(UnitTests
+     tests/test_buffer.cpp
+     tests/test_dispatcher.cpp
+     tests/test_gps.cpp
+     tests/test_logger.cpp
+     tests/test_timer.cpp
+  )
+  target_link_libraries(UnitTests PRIVATE gs_core uWebSockets GTest::gtest_main)
+  include(GoogleTest)
+  gtest_discover_tests(UnitTests)
+  enable_testing()
+endif()

@@ -1,2 +1,6 @@
 build
+build-arm64
 /.cache/clangd/index
+/server/GroundStation
+/server/Satellite
+/server/app.zip
