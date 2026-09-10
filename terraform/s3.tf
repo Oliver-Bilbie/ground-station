@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "host-bucket" {
-  bucket = "${var.app_name}-host-bucket"
+  bucket = "${var.app_name}-dashboard-bucket"
 }
 
 resource "aws_s3_bucket_public_access_block" "host-bucket-public-access" {
@@ -42,4 +42,8 @@ resource "aws_s3_bucket_website_configuration" "host-bucket-hosting-config" {
   index_document {
     suffix = "index.html"
   }
+}
+
+output "bucket_name" {
+  value = aws_s3_bucket.host-bucket.id
 }

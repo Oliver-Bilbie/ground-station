@@ -2,7 +2,7 @@ import { useWebSocket } from "./useWebSocket";
 import { TelemetryContext } from "./TelemetryContext";
 
 export const TelemetryProvider = ({ children }) => {
-  const socketValue = useWebSocket("ws://localhost:9001");
+  const socketValue = useWebSocket();
 
   return (
     <TelemetryContext.Provider value={socketValue}>

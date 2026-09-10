@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTelemetry } from "../Telemetry";
 import { idToColor, parsePacket } from "../helpers";
+import "./EventLog.css";
 
 const MAX_EVENTS = 8;
 const EVENT_TIMEOUT_MS = 10000;
@@ -59,7 +60,7 @@ const EventLog = () => {
             <span className="timestamp">
               [{new Date(item.timestamp).toLocaleTimeString()}]
             </span>
-            <h4 className="telemetry">{item.message}</h4>
+            <h4>{item.message}</h4>
           </div>
         </div>
       ))}
