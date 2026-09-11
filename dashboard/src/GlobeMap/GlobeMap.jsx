@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import Globe from "globe.gl";
 import { useTelemetry } from "../Telemetry";
-import { cartesianToGlobe, idToColor, parsePacket } from "../helpers";
+import { cartesianToGlobe, idToColor } from "../helpers";
 import EarthNight from "../assets/earth-night.jpg";
 import NightSky from "../assets/night-sky.png";
 import EarthTopology from "../assets/earth-topology.png";
@@ -81,15 +81,13 @@ const GlobeMap = () => {
     if (!lastMessage) return;
 
     try {
-      const data = parsePacket(lastMessage);
-
-      if (data.event === "disconnect") {
-        delete satData.current[data.satellite_id];
+      if (lastMessage.event === "disconnect") {
+        delete satData.current[lastMessage.satellite_id];
         return;
       }
 
-      if (data.event === "position") {
-        const { satellite_id, position } = data;
+      if (lastMessage.event === "position") {
+        const { satellite_id, position } = lastMessage;
         const { x, y, z } = position;
 
         const [lat, lng, alt] = cartesianToGlobe(x, y, z);

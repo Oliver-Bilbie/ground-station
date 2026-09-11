@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTelemetry } from "../Telemetry";
-import { cartesianToGeographic, idToColor, parsePacket } from "../helpers";
+import { cartesianToGeographic, idToColor } from "../helpers";
 import "./SatelliteData.css";
 
 const formatPosition = (p) => {
@@ -21,8 +21,7 @@ const SatelliteData = () => {
     if (!lastMessage) return;
 
     try {
-      const data = parsePacket(lastMessage);
-      const { event, satellite_id } = data;
+      const { event, satellite_id } = lastMessage;
 
       setSatData((prevData) => {
         if (event === "disconnect") {
@@ -40,8 +39,8 @@ const SatelliteData = () => {
             [satellite_id]: {
               ...existingSat,
               ...(event === "position"
-                ? { position: data.position }
-                : { latency: data.latency }),
+                ? { position: lastMessage.position }
+                : { latency: lastMessage.latency }),
             },
           };
         }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ATTACH_ENDPOINT } from "../helpers/endpoints";
+import { parsePacket } from "../helpers";
 
 const LOCAL_WS = "ws://localhost:9001";
 const LEASE_REFRESH_MS = 8 * 60 * 1000;
@@ -47,7 +48,10 @@ export const useWebSocket = () => {
             return;
           }
           setStatus("Closed");
-          const retryDelay = Math.min(300000, 2000 * 2 ** retryCountRef.current);
+          const retryDelay = Math.min(
+            300000,
+            2000 * 2 ** retryCountRef.current,
+          );
           retryCountRef.current += 1;
           reconnectTimeoutRef.current = setTimeout(connect, retryDelay);
           return;
@@ -71,7 +75,10 @@ export const useWebSocket = () => {
         if (!isMountedRef.current || generation !== generationRef.current) {
           return;
         }
-        setLastMessage(event.data);
+        try {
+          const data = parsePacket(event.data);
+          setLastMessage(data);
+        } catch {}
       };
 
       socket.onclose = () => {

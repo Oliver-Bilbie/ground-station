@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTelemetry } from "../Telemetry";
-import { idToColor, parsePacket } from "../helpers";
+import { idToColor } from "../helpers";
 import "./EventLog.css";
 
 const MAX_EVENTS = 8;
@@ -22,8 +22,7 @@ const EventLog = () => {
     if (!lastMessage) return;
 
     try {
-      const data = parsePacket(lastMessage);
-      const { event, satellite_id } = data;
+      const { event, satellite_id } = lastMessage;
 
       const eventMap = {
         dropped_packet: `Packet dropped for Sat ${satellite_id}. Re-requesting...`,
