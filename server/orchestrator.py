@@ -13,6 +13,8 @@ GROUNDSTATION_CMD = ["./GroundStation", "--ws"]
 SATELLITE_CMD = ["./Satellite"]
 EXPIRE_AT_PARAMETER = os.environ.get("EXPIRE_AT_PARAMETER")
 LEASE_CHECK_S = 5
+SAT_MIN = 1
+SAT_MAX = 8
 
 
 class Orchestrator:
@@ -101,6 +103,13 @@ class Orchestrator:
         signal.signal(signal.SIGTERM, self.shutdown)
         signal.signal(signal.SIGINT, self.shutdown)
 
+        if not self.expired():
+            self.start_groundstation()
+            initial = random.randint(SAT_MIN, SAT_MAX)
+            print(f"[Orchestrator] Starting with {initial} satellites")
+            for _ in range(initial):
+                self.spawn_satellite()
+
         while self.running:
             if self.expired():
                 if self.gs_process or self.satellite_processes:
@@ -113,7 +122,7 @@ class Orchestrator:
             self.reap_dead_children()
 
             current_count = len(self.satellite_processes)
-            target = random.randint(1, 8)
+            target = random.randint(SAT_MIN, SAT_MAX)
 
             print(f"[Orchestrator] Current: {current_count} | Target: {target}")
 
