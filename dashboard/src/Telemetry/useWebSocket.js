@@ -16,7 +16,9 @@ const attach = async () => {
 };
 
 export const useWebSocket = () => {
-  const [lastMessage, setLastMessage] = useState(null);
+  const satelliteData = useRef({});
+  const hasNewData = useRef(false);
+  const satelliteEvents = useRef([]);
   const [status, setStatus] = useState("Connecting");
   const socketRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
@@ -77,7 +79,33 @@ export const useWebSocket = () => {
         }
         try {
           const data = parsePacket(event.data);
-          setLastMessage(data);
+          switch (data.event) {
+            case "position":
+              const posSat = (satelliteData.current[data.satellite_id] ??= {});
+              posSat.position = data.position;
+              hasNewData.current = true;
+              break;
+
+            case "latency":
+              const latSat = (satelliteData.current[data.satellite_id] ??= {});
+              latSat.latency = data.latency;
+              break;
+
+            case "dropped_packet":
+            case "unavailable_packet":
+            case "lost_packet_report":
+              satelliteEvents.current.push(data);
+              break;
+
+            case "disconnect":
+              delete satelliteData.current[data.satellite_id];
+              satelliteEvents.current.push(data);
+              hasNewData.current = true;
+              break;
+
+            default:
+              console.warn(`Received unexpected packet type: ${data.event}`);
+          }
         } catch {}
       };
 
@@ -114,11 +142,26 @@ export const useWebSocket = () => {
     };
   }, []);
 
+  const readData = (claim) => {
+    const isNew = hasNewData.current;
+    if (claim) hasNewData.current = false;
+    return { dataRef: satelliteData, isNew };
+  };
+
+  const readEvents = () => {
+    return satelliteEvents.current.splice(0);
+  };
+
   const sendMessage = (msg) => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(msg);
     }
   };
 
-  return { lastMessage, status, sendMessage };
+  return {
+    satelliteData: readData,
+    satelliteEvents: readEvents,
+    status,
+    sendMessage,
+  };
 };

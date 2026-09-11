@@ -3,49 +3,41 @@ import { useTelemetry } from "../Telemetry";
 import { idToColor } from "../helpers";
 import "./EventLog.css";
 
-const MAX_EVENTS = 8;
-const EVENT_TIMEOUT_MS = 10000;
+const MAX_EVENTS = 10;
+const EVENT_TIMEOUT_MS = 5000;
+
+const eventMsg = {
+  dropped_packet: (e) =>
+    `Packet dropped for Sat ${e.satellite_id}. Re-requesting...`,
+  unavailable_packet: (e) => `CRITICAL: Packet lost for Sat ${e.satellite_id}.`,
+  disconnect: (e) => `LINK LOST: Satellite ${e.satellite_id} offline.`,
+  lost_packet_report: (e) =>
+    `Satellite ${e.satellite_id} lost ${e.lost_packet_total} packets while connected.`,
+};
 
 const EventLog = () => {
   const [events, setEvents] = useState([]);
-  const { lastMessage } = useTelemetry();
+  const { satelliteEvents } = useTelemetry();
 
   useEffect(() => {
     const interval = setInterval(() => {
       const staleTime = Date.now() - EVENT_TIMEOUT_MS;
-      setEvents((prev) => prev.filter((e) => e.timestamp > staleTime));
-    }, 1000);
+      const newEvents = satelliteEvents();
+      setEvents((prev) =>
+        [
+          ...newEvents.map((e) => ({
+            id: `${e.satellite_id}-${Date.now()}-${Math.random()}`,
+            message: eventMsg[e.event](e),
+            color: idToColor(e.satellite_id),
+            timestamp: Date.now(),
+            type: e.event,
+          })),
+          ...prev.filter((e) => e.timestamp > staleTime),
+        ].slice(0, MAX_EVENTS),
+      );
+    }, 2000);
     return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    if (!lastMessage) return;
-
-    try {
-      const { event, satellite_id } = lastMessage;
-
-      const eventMap = {
-        dropped_packet: `Packet dropped for Sat ${satellite_id}. Re-requesting...`,
-        unavailable_packet: `CRITICAL: Packet lost for Sat ${satellite_id}.`,
-        disconnect: `LINK LOST: Satellite ${satellite_id} offline.`,
-      };
-
-      if (eventMap[event]) {
-        const newEvent = {
-          id: `${satellite_id}-${Date.now()}-${Math.random()}`,
-          message: eventMap[event],
-          color: idToColor(satellite_id),
-          timestamp: Date.now(),
-          type: event,
-        };
-
-        //eslint-disable-next-line react-hooks/set-state-in-effect
-        setEvents((prev) => [newEvent, ...prev].slice(0, MAX_EVENTS));
-      }
-    } catch (err) {
-      console.error("Event Log Error:", err);
-    }
-  }, [lastMessage]);
 
   return (
     <div className="event-log-container">
