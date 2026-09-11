@@ -4,7 +4,7 @@ This is a project that I built to explore some lower-level networking.
 It simulates a connection between a satellite and a ground station, where the satellite periodically broadcasts its position over UDP. Random noise is introduced to simulate the packet travelling through space; some packets are delayed, while others are never sent at all. The ground station will receive these packets and log them in the correct order (even if they are received out of order) and re-request missing packets from the satellite.
 
 This project also contains a dashboard to visualize the data in real time, which is driven by a [uWebSockets](https://github.com/uNetworking/uWebSockets) server running on the ground station to broadcast telemetry events.
-You can view an instance of the project running on AWS [here](https://satellites.oliver-bilbie.co.uk/), where satellites will randomly spin up and tear down over time.
+You can view an instance of the project running on AWS [here](https://ground-station.oliver-bilbie.co.uk/), where satellites will randomly spin up and tear down over time. See the [server directory](server) for implementation details.
 
 ## Requirements
 
