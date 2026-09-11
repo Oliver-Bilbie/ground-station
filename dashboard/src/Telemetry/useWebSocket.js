@@ -3,7 +3,7 @@ import { ATTACH_ENDPOINT } from "../helpers/endpoints";
 import { parsePacket } from "../helpers";
 
 const LOCAL_WS = "ws://localhost:9001";
-const LEASE_REFRESH_MS = 8 * 60 * 1000;
+const LEASE_REFRESH_MS = 4 * 60 * 1000;
 const isLocal = ATTACH_ENDPOINT.includes("PLACEHOLDER");
 
 const attach = async () => {

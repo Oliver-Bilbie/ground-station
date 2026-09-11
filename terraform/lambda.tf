@@ -100,9 +100,9 @@ resource "aws_lambda_function" "attach" {
       MICROVM_IMAGE_VERSION      = aws_lambdamicrovms_image.ground_station.latest_active_image_version
       MICROVM_EXECUTION_ROLE_ARN = aws_iam_role.microvm_execution_role.arn
       EXPIRE_AT_PARAMETER        = aws_ssm_parameter.expire_at.name
-      LEASE_SECONDS              = "600"
+      LEASE_SECONDS              = "300"
       WS_PORT                    = "9001"
-      TOKEN_EXPIRATION_MINUTES   = "20"
+      TOKEN_EXPIRATION_MINUTES   = "60"
       MAX_WAIT_SECONDS           = "20"
     }
   }

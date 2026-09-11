@@ -11,10 +11,10 @@ IMAGE_ID = os.environ["MICROVM_IMAGE_IDENTIFIER"]
 IMAGE_VERSION = os.environ.get("MICROVM_IMAGE_VERSION")
 EXEC_ROLE_ARN = os.environ.get("MICROVM_EXECUTION_ROLE_ARN")
 WS_PORT = int(os.environ.get("WS_PORT", "9001"))
-TOKEN_MINUTES = int(os.environ.get("TOKEN_EXPIRATION_MINUTES", "20"))
+TOKEN_MINUTES = int(os.environ.get("TOKEN_EXPIRATION_MINUTES", "60"))
 MAX_WAIT_S = int(os.environ.get("MAX_WAIT_SECONDS", "60"))
 EXPIRE_AT_PARAMETER = os.environ["EXPIRE_AT_PARAMETER"]
-LEASE_SECONDS = int(os.environ.get("LEASE_SECONDS", "600"))
+LEASE_SECONDS = int(os.environ.get("LEASE_SECONDS", "300"))
 
 INGRESS = (
     f"arn:aws:lambda:{REGION}:aws:network-connector:aws-network-connector:ALL_INGRESS"
@@ -85,7 +85,7 @@ def start_new():
         "imageIdentifier": IMAGE_ID,
         "ingressNetworkConnectors": [INGRESS],
         "egressNetworkConnectors": [EGRESS],
-        "maximumDurationInSeconds": 900,
+        "maximumDurationInSeconds": 3600,
         "idlePolicy": {
             "autoResumeEnabled": True,
             "maxIdleDurationSeconds": 300,
