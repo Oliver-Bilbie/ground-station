@@ -9,7 +9,7 @@ from typing import List
 
 import boto3
 
-GROUNDSTATION_CMD = ["./GroundStation"]
+GROUNDSTATION_CMD = ["./GroundStation", "--ws"]
 SATELLITE_CMD = ["./Satellite"]
 EXPIRE_AT_PARAMETER = os.environ.get("EXPIRE_AT_PARAMETER")
 LEASE_CHECK_S = 5
