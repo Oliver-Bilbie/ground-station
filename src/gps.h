@@ -1,6 +1,7 @@
 #ifndef GPS_H
 #define GPS_H
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <random>
@@ -32,11 +33,7 @@ struct SystemClock {
 template <typename Clock = SystemClock>
 class GPS {
  public:
-  GPS() {
-    SystemClock clock;
-    _clock = clock;
-    setup();
-  }
+  GPS() : _clock(_owned_clock) { setup(); }
   GPS(Clock& clock) : _clock(clock) { setup(); }
 
   Position get_position() {
@@ -49,7 +46,8 @@ class GPS {
   const double EARTH_RADIUS = 6371000.0;  // Meters
   const double AVG_ALTITUDE = 550000.0;   // 550km
   State state;
-  Clock _clock;
+  Clock _owned_clock;
+  Clock& _clock;
 
   void setup() {
     std::random_device rd;
@@ -103,14 +101,7 @@ class GPS {
     return output;
   }
 
-  void update_position() {
-    uint64_t now_ms = get_current_time_ms();
-    double dt = (now_ms - state.last_update_time_ms) / 1000.0;  // Convert to seconds
-
-    if (dt <= 0)
-      return;  // No time passed
-
-    // Runge-Kutta 4 Integration
+  void rk4_step(double dt) {
     Derivative k1 = evaluate(state, 0.0, 0.0, Derivative());
     Derivative k2 = evaluate(state, 0.0, dt * 0.5, k1);
     Derivative k3 = evaluate(state, 0.0, dt * 0.5, k2);
@@ -131,6 +122,24 @@ class GPS {
     state.vx += dvxdt * dt;
     state.vy += dvydt * dt;
     state.vz += dvzdt * dt;
+  }
+
+  void update_position() {
+    // Logic for handling the clock inconsistencies from running the code in an AWS
+    // Lambda MicroVM
+    uint64_t now_ms = get_current_time_ms();
+    if (now_ms <= state.last_update_time_ms)
+      return;
+
+    double dt = (now_ms - state.last_update_time_ms) / 1000.0;
+    dt = std::min(dt, 3600.0);
+
+    const double max_step = 1.0;
+    while (dt > 0) {
+      double step = std::min(dt, max_step);
+      rk4_step(step);
+      dt -= step;
+    }
 
     state.last_update_time_ms = now_ms;
   }
