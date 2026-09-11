@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTelemetry } from "../Telemetry";
-import { cartesianToGeographic, idToColor, parsePacket } from "../helpers";
+import { cartesianToGeographic, idToColor } from "../helpers";
 import "./SatelliteData.css";
 
 const formatPosition = (p) => {
@@ -14,52 +14,24 @@ const formatPosition = (p) => {
 };
 
 const SatelliteData = () => {
-  const [satData, setSatData] = useState({});
-  const { lastMessage } = useTelemetry();
+  const { satelliteData } = useTelemetry();
+  const [localData, setLocalData] = useState({});
+  const { dataRef } = satelliteData(false);
 
   useEffect(() => {
-    if (!lastMessage) return;
-
-    try {
-      const data = parsePacket(lastMessage);
-      const { event, satellite_id } = data;
-
-      setSatData((prevData) => {
-        if (event === "disconnect") {
-          const { [satellite_id]: _, ...rest } = prevData;
-          return rest;
-        }
-
-        if (event === "position" || event === "latency") {
-          const existingSat = prevData[satellite_id] || {
-            color: idToColor(satellite_id),
-          };
-
-          return {
-            ...prevData,
-            [satellite_id]: {
-              ...existingSat,
-              ...(event === "position"
-                ? { position: data.position }
-                : { latency: data.latency }),
-            },
-          };
-        }
-
-        return prevData;
-      });
-    } catch (err) {
-      console.error("Telemetry Processing Error:", err);
-    }
-  }, [lastMessage]);
+    const id = setInterval(() => {
+      setLocalData({ ...dataRef.current });
+    }, 100);
+    return () => clearInterval(id);
+  }, [dataRef]);
 
   return (
     <div className="satellite-container">
-      {Object.entries(satData).map(([id, sat]) => (
+      {Object.entries(localData).map(([id, sat]) => (
         <div
           key={id}
           className="glass-panel card"
-          style={{ borderLeftColor: sat.color }}
+          style={{ borderLeftColor: idToColor(id) }}
         >
           <h3>
             Satellite <span className="telemetry">{id}</span>

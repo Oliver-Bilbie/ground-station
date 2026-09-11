@@ -29,8 +29,9 @@ struct LatencyState {
 
 class LatencyTracker {
  public:
-  LatencyTracker(std::shared_ptr<TelemetryServer> telemetry_server)
-      : telemetry(telemetry_server), is_running(true) {
+  LatencyTracker(std::shared_ptr<TelemetryServer> telemetry_server,
+                 bool write_stdout = true)
+      : telemetry(telemetry_server), write_stdout(write_stdout), is_running(true) {
     if (telemetry_server == nullptr) {
       std::cout << "[WARN] Latency Tracker was initialized without a telemetry server"
                 << std::endl;
@@ -61,8 +62,10 @@ class LatencyTracker {
         }
 
         for (const auto& satellite_id : timed_out) {
-          std::cout << "[INFO] Connection to satellite " << satellite_id
-                    << " has timed out" << std::endl;
+          if (this->write_stdout) {
+            std::cout << "[INFO] Connection to satellite " << satellite_id
+                      << " has timed out" << std::endl;
+          }
 
           if (telemetry != nullptr) {
             std::ostringstream json_oss;
@@ -144,6 +147,7 @@ class LatencyTracker {
   Timer timer;
 
   std::shared_ptr<TelemetryServer> telemetry;
+  bool write_stdout;
 
   std::atomic<bool> is_running;
   std::mutex mtx;

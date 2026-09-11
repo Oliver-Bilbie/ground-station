@@ -1,2 +1,10 @@
 build
+build-arm64
 /.cache/clangd/index
+/server/GroundStation
+/server/Satellite
+/server/app.zip
+/server/attach.zip
+/server/attach_build
+/terraform/.terraform
+/terraform/.terraform.lock.hcl

@@ -44,8 +44,12 @@ template <typename T>
 class Dispatcher {
  public:
   Dispatcher(std::shared_ptr<T> server_ptr,
-             std::shared_ptr<TelemetryServer> telemetry_server)
-      : server(server_ptr), telemetry(telemetry_server), is_running(true) {
+             std::shared_ptr<TelemetryServer> telemetry_server,
+             bool write_stdout = true)
+      : server(server_ptr),
+        telemetry(telemetry_server),
+        write_stdout(write_stdout),
+        is_running(true) {
     if (telemetry_server == nullptr) {
       std::cout << "[WARN] Dispatcher was initialized without a telemetry server"
                 << std::endl;
@@ -95,8 +99,10 @@ class Dispatcher {
         }
 
         for (const auto& item : retry_items) {
-          std::cout << "[INFO] Requesting missing packet: " << item.packet_number
-                    << " from satellite " << item.satellite_id << std::endl;
+          if (this->write_stdout) {
+            std::cout << "[INFO] Requesting missing packet: " << item.packet_number
+                      << " from satellite " << item.satellite_id << std::endl;
+          }
 
           if (telemetry != nullptr) {
             std::ostringstream json_oss;
@@ -177,6 +183,7 @@ class Dispatcher {
 
   std::shared_ptr<T> server;
   std::shared_ptr<TelemetryServer> telemetry;
+  bool write_stdout;
 
   friend class DispatcherTest;
 };

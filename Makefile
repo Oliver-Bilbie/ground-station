@@ -1,9 +1,12 @@
-.PHONY: build dash dashboard
+.PHONY: build server dash dashboard
 default: build
 
 build:
 	@cmake -B build -DCMAKE_BUILD_TYPE=Release
 	@cmake --build build
+
+server:
+	@./deploy.sh
 
 gs: ground_station
 ground_station:

@@ -3,7 +3,7 @@ const EARTH_RADIUS_METERS = 6371000;
 export const cartesianToGlobe = (x, y, z) => {
   let [lat, lng, alt] = cartesianToGeographic(x, y, z);
   alt = alt / EARTH_RADIUS_METERS;
-  return [lat, lng, alt];
+  return { lat, lng, alt };
 };
 
 export const cartesianToGeographic = (x, y, z) => {

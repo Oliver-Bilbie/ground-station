@@ -19,7 +19,7 @@ struct ListenResponse {
 
 class Server {
  public:
-  Server(int port) {
+  Server(int port, bool write_stdout = true) : write_stdout(write_stdout) {
     file_descriptor = socket(AF_INET, SOCK_DGRAM, 0);
     if (file_descriptor == -1) {
       std::cerr << "[ERROR] Error acquiring file descriptor" << std::endl;
@@ -67,11 +67,15 @@ class Server {
       return std::nullopt;
     }
     if (recv_len == -1) {
-      std::cout << "[WARN] Received a malformed packet" << std::endl;
+      if (write_stdout) {
+        std::cout << "[WARN] Received a malformed packet" << std::endl;
+      }
       return std::nullopt;
     }
     if (!(pfd.revents & POLLIN)) {
-      std::cout << "[WARN] Received a malformed packet" << std::endl;
+      if (write_stdout) {
+        std::cout << "[WARN] Received a malformed packet" << std::endl;
+      }
       return std::nullopt;
     }
 
@@ -82,6 +86,7 @@ class Server {
   int file_descriptor;
   struct sockaddr_in _address;
   Space space;
+  bool write_stdout;
 };
 
 #endif

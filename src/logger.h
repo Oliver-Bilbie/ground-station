@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include <queue>
+#include <string>
 #include <unordered_map>
 #include "packets.h"
 #include "telemetry_server.h"
@@ -24,7 +25,9 @@ struct LoggerState {
 
 class Logger {
  public:
-  Logger(std::shared_ptr<TelemetryServer> telemetry_server);
+  Logger(std::shared_ptr<TelemetryServer> telemetry_server,
+         bool write_stdout = true,
+         bool write_ws = false);
   void log(PositionPacketData packet);
   void on_disconnect(uint64_t satellite_id);
 
@@ -32,7 +35,10 @@ class Logger {
   std::unordered_map<uint64_t, LoggerState> satellite_states;
 
   std::shared_ptr<TelemetryServer> telemetry;
+  bool write_stdout;
+  bool write_ws;
 
+  void output(const std::string& text, const std::string& json);
   void process_buffer(uint64_t satellite_id);
 
   friend class LoggerTest;

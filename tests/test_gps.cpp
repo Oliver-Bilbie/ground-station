@@ -56,3 +56,11 @@ TEST_F(GPSTest, PositionIsValidAfterOneYear) {
   Position p = gps.get_position();
   ASSERT_TRUE(is_in_leo(p));
 }
+
+TEST_F(GPSTest, PositionIsValidOverOneOrbit) {
+  for (int m = 1; m <= 90; m++) {
+    clock.set_time_minutes(m);
+    Position p = gps.get_position();
+    ASSERT_TRUE(is_in_leo(p));
+  }
+}

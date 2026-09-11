@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import Globe from "globe.gl";
 import { useTelemetry } from "../Telemetry";
-import { cartesianToGlobe, idToColor, parsePacket } from "../helpers";
+import { cartesianToGlobe, idToColor } from "../helpers";
 import EarthNight from "../assets/earth-night.jpg";
 import NightSky from "../assets/night-sky.png";
 import EarthTopology from "../assets/earth-topology.png";
@@ -10,9 +10,7 @@ import "./GlobeMap.css";
 const GlobeMap = () => {
   const containerRef = useRef(null);
   const globeRef = useRef(null);
-  const satData = useRef({});
-
-  const { lastMessage } = useTelemetry();
+  const { satelliteData } = useTelemetry();
 
   useEffect(() => {
     const width = containerRef.current.clientWidth;
@@ -36,25 +34,24 @@ const GlobeMap = () => {
     globeRef.current = globe;
 
     const tick = () => {
-      const satellites = Object.values(satData.current).filter(
-        (d) => !isNaN(d.lat) && !isNaN(d.lng) && !isNaN(d.alt),
-      );
-
-      if (satellites.length === 0) {
-        globeRef.current._tickReq = requestAnimationFrame(tick);
-        return;
-      }
-
-      const groupedSets = Object.values(
-        satellites.reduce((acc, sat) => {
-          if (!acc[sat.color]) acc[sat.color] = { color: sat.color, items: [] };
-          acc[sat.color].items.push(sat);
-          return acc;
-        }, {}),
-      );
-
-      globe.particlesData(groupedSets);
       globeRef.current._tickReq = requestAnimationFrame(tick);
+      const { dataRef, isNew } = satelliteData(true);
+      if (!isNew) return;
+      globe.particlesData(
+        Object.entries(dataRef.current)
+          .filter(
+            ([_, sat]) =>
+              !isNaN(sat.position?.x) &&
+              !isNaN(sat.position?.y) &&
+              !isNaN(sat.position?.z),
+          )
+          .map(([id, sat]) => ({
+            color: idToColor(id),
+            items: [
+              cartesianToGlobe(sat.position.x, sat.position.y, sat.position.z),
+            ],
+          })),
+      );
     };
 
     tick();
@@ -76,44 +73,6 @@ const GlobeMap = () => {
         cancelAnimationFrame(globeRef.current._tickReq);
     };
   }, []);
-
-  useEffect(() => {
-    if (!lastMessage) return;
-
-    try {
-      const data = parsePacket(lastMessage);
-
-      if (data.event === "disconnect") {
-        delete satData.current[data.satellite_id];
-        return;
-      }
-
-      if (data.event === "position") {
-        const { satellite_id, position } = data;
-        const { x, y, z } = position;
-
-        const [lat, lng, alt] = cartesianToGlobe(x, y, z);
-
-        let sat = satData.current[satellite_id];
-
-        if (!sat) {
-          sat = {
-            id: satellite_id,
-            color: idToColor(satellite_id),
-          };
-          satData.current[satellite_id] = sat;
-        }
-
-        // eslint-disable-next-line react-hooks/immutability
-        sat.lat = lat;
-        sat.lng = lng;
-        sat.alt = alt;
-        return;
-      }
-    } catch (err) {
-      console.error("WS stream error:", err);
-    }
-  }, [lastMessage]);
 
   return <div ref={containerRef} className="globe-container" />;
 };
